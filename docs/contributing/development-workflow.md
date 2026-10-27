@@ -8,7 +8,7 @@ This page defines the expected local workflow before opening a pull request.
 - Clone your fork locally and add the upstream repository if needed
 - Enable repo hooks once per clone: `git config core.hooksPath .githooks && chmod +x .githooks/pre-commit`
 
-- Branch from `xteink`, this fork's default branch. Upstream's is `develop`;
+- Branch from `main`, this fork's default branch. Upstream's is `develop`;
   they are not interchangeable.
 - Keep each PR focused on one fix or feature area
 
@@ -39,7 +39,7 @@ build one directly.
 
 ## 4) Open the PR
 
-- Target `xteink` (this repository's default branch)
+- Target `main` (this repository's default branch)
 - Use a semantic title (example: `fix: avoid crash when opening malformed epub`)
 - Describe the problem, approach, and any tradeoffs
 - Say what you did **not** verify. Hardware always counts as not verified.

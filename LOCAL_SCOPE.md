@@ -162,7 +162,7 @@ immediate/waiting requests.
 | `lib/Epub/Epub/{Page,Section}.{h,cpp}`, `lib/Epub/Epub/blocks/TextBlock.{h,cpp}`, `src/activities/reader/EpubReaderActivity.{h,cpp}` | Optional budgeted next-page decode and reader-owned transfer/invalidation | one graph within a 24 KiB request budget |
 | `src/activities/Activity.h`, `src/activities/ActivityManager.{h,cpp}` | Cancellable idle work on the existing render task, separate from repaint completion | scalar notification state |
 | `freeink-sdk/libs/ui/FreeInkUI/include/FreeInkUICore.h`, `components/controls/button.h`, `FreeInkApp.h`, `src/apps_local/ui/{ToyboxScreen.h,ToyboxTokens.h}`, `src/components/SideButtonNavigation.h` | Semantic visual-order focus, solid contrasting selection, and per-screen side-button routing | bounded interaction-table policy |
-| `src/DevMode.{h,cpp}`, `src/activities/network/WifiSelectionActivity.cpp`, `src/activities/util/FrontlightPanelActivity.cpp` | Preserve an explicit Wi-Fi off choice when revisiting management or resuming Developer Mode | one session radio-permission flag |
+| `src/DevMode.{h,cpp}`, `src/activities/network/WifiSelectionActivity.cpp`, `src/activities/settings/SettingsActivity.cpp`, `src/activities/util/FrontlightPanelActivity.{h,cpp}` | Preserve the live Wi-Fi on/off choice when leaving and revisiting management; preserve explicit off when resuming Developer Mode | existing session radio-permission flag; no parent shutdown for management |
 | `src/activities/library/LibraryListActivity.{h,cpp}` | Reuse the existing decoded row window for selection-only repaints; invalidate on data/view changes or failed reads | scalar cache identity |
 | `src/activities/reader/ReaderToolbarUi.cpp` | Filled style checkboxes with a contrasting tick | one list-style flag |
 | `src/activities/util/KeyboardEntryActivity.cpp` | Shared text/search entry uses the existing black pixel header and back target | one header renderer call |
@@ -225,6 +225,8 @@ row formatting and framed chrome live in `src/apps_local/ui/PixelMenu*`.
 
 | File | Seam |
 | --- | --- |
+| `lib/hal/HalStorage.{h,cpp}`, `scripts_local/sim_catchup.py` | Checked directory enumeration for bulk book-position sync; distinguish SD read failure from EOF, with a matching simulator overload |
+| `lib/KOReaderSync/KOReaderDocumentId.cpp` | Bulk sync reuses both document identifiers; bounded hash scratch and exact signed reads fail safely on damaged SD data |
 | `src/MappedInputManager.{cpp,h}`, `src/activities/ActivityManager.cpp` | bottom-edge reader settings shortcut takes priority over Home only on the active reader |
 | `src/activities/Activity.h`, `src/activities/reader/ReaderActivity.h`, `EpubReaderActivity.{cpp,h}`, `XtcReaderActivity.{cpp,h}` | Type-safe settings gesture capability and format-aware entry; existing EPUB repagination and XTC rendering retain ownership |
 | `src/CrossPointSettings.{cpp,h}`, `lib/Epub/Epub/ReaderRenderSpec.h`, `Section.cpp`, `parsers/ChapterHtmlSlimParser.{cpp,h}` | saved Regular/Bold reader weight, resolved before measurement; versioned section layout/cache and clipping signature include the weight |
@@ -465,8 +467,11 @@ long imports; no native-device task/framebuffer is added. See
 [stress validation](docs/apps/flashcards-stress-2026-10-19.md).
 
 The Home order extends the existing HomeMenuCore config and the
-verified 992-byte preference slots to HMC3, preserving HMC1/HMC2 defaults. The
-Settings row remains required but movable. HomeMenuSettingsActivity owns a
+verified 992-byte preference slots to HMC4, preserving customized HMC1/HMC2/HMC3 menus.
+The shared menu allows eight visible entries and defaults to seven, with File
+Transfer in third position. Untouched older defaults gain that entry; names,
+shortcuts and custom order survive. Earlier firmware preserves HMC4 as read only.
+Settings remains required but movable. HomeMenuSettingsActivity owns a
 reusable order-button descriptor; the shared header keeps Back available. The
 shelf state adds an optional Home launch-origin line for wake. No app carries
 its own destination or adds a background task. Firmware file selection shares

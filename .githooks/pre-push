@@ -21,11 +21,11 @@
 #   git config core.hooksPath .githooks
 #
 # Override, for the rare deliberate case:
-#   CROSSPLAY_ALLOW_UNTAGGED_BUMP=1 git push origin xteink
+#   CROSSPLAY_ALLOW_UNTAGGED_BUMP=1 git push origin main
 set -uo pipefail
 
 remote_name="${1:-origin}"
-deploy_branch="xteink"
+deploy_branch="main"
 zero="0000000000000000000000000000000000000000"
 
 # stdin is consumed once, so read every ref before deciding anything.
@@ -38,7 +38,7 @@ done
 [ -n "${CROSSPLAY_ALLOW_UNTAGGED_BUMP:-}" ] && exit 0
 
 # Tags travelling in this same push count as "tagged": that is the owner's
-# `git push origin xteink v1.2.3`, which must not be refused.
+# `git push origin main v1.2.3`, which must not be refused.
 tags_in_push=""
 for r in "${refs[@]}"; do
   set -- $r

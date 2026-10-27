@@ -1,5 +1,5 @@
 #!/bin/bash
-# wt.sh cuts new trees from origin/xteink, and reports against it.
+# wt.sh cuts new trees from origin/main, and reports against it.
 #
 # The bug this exists for: `wt.sh new` defaulted to the LOCAL xteink branch.
 # firmware-next's local xteink carries a release train's commits for the whole
@@ -15,7 +15,7 @@
 #
 # The test drives the REAL wt.sh against a synthetic workspace whose local
 # branch is deliberately ahead of its origin, rather than asserting against the
-# text of the script: a grep for "origin/xteink" would pass on a script that
+# text of the script: a grep for "origin/main" would pass on a script that
 # mentioned it in a comment.
 #
 #   host-tests/wtbase/run.sh
@@ -48,15 +48,15 @@ cdd() { cd "$1" || { echo "FAIL cannot enter $1 -- refusing to run outside the f
 # Mario's actual workspace, which is a far worse failure than a red suite.
 touch "$WORK/.xteink-workspace"
 
-# origin: a bare repo whose xteink is one commit BEHIND the integration clone.
-q git init --bare -b xteink "$WORK/origin.git"
+# origin: a bare repo whose main is one commit BEHIND the integration clone.
+q git init --bare -b main "$WORK/origin.git"
 q git clone "$WORK/origin.git" "$WORK/integration"
 cdd "$WORK/integration"
 q git config user.email t@t; q git config user.name t
 mkdir -p scripts_local
 echo published > file.txt
 q git add -A; q git commit -m "published"
-q git push -u origin xteink
+q git push -u origin main
 PUBLISHED="$(git rev-parse HEAD)"
 
 # The train: one commit that exists only locally, exactly like a version bump
@@ -68,7 +68,7 @@ UNPUSHED="$(git rev-parse HEAD)"
 cp "$WT" scripts_local/wt.sh
 chmod +x scripts_local/wt.sh
 q git add -A; q git commit -m "wt.sh"
-# Committing wt.sh moved local xteink again; origin still has only PUBLISHED,
+# Committing wt.sh moved local main again; origin still has only PUBLISHED,
 # so the local branch is now two ahead. That is the state under test.
 LOCAL_TIP="$(git rev-parse HEAD)"
 
@@ -84,7 +84,7 @@ echo "wt.sh base"
 
 ./scripts_local/wt.sh new probe >/dev/null 2>&1
 BASE="$(git rev-parse app/probe 2>/dev/null || echo missing)"
-is "new cuts from origin/xteink, not the local branch" "$BASE" "$PUBLISHED"
+is "new cuts from origin/main, not the local branch" "$BASE" "$PUBLISHED"
 [ "$BASE" = "$UNPUSHED" ] && bad "new inherited the train's unpushed commit"
 [ "$BASE" = "$LOCAL_TIP" ] && bad "new inherited the local tip"
 
@@ -103,7 +103,7 @@ echo work >> file.txt
 q git add -A; q git commit -m "real work"
 cdd "$WORK/integration"
 case "$(./scripts_local/wt.sh list 2>/dev/null | grep '^probe ')" in
-  *"1 commit(s) ahead of origin/xteink"*) ok "list still reports genuine unmerged work" ;;
+  *"1 commit(s) ahead of origin/main"*) ok "list still reports genuine unmerged work" ;;
   *) bad "list lost a genuinely ahead tree: $(./scripts_local/wt.sh list 2>/dev/null | grep '^probe ')" ;;
 esac
 
@@ -185,6 +185,25 @@ record droptree
 [ ! -d "$WORK/wt/droptree" ] && ok "drop removes a merged, clean tree another session's record names" || bad "drop refused droptree"
 [ -e "$WORK/.board/trees/droptree.json" ] && bad "drop left the record behind" || ok "and clears its record"
 unset BOARD_ROOT
+
+echo "wt.sh drop refuses when it cannot compare"
+
+# Without origin/main, drop has no answer to "is this work merged?". It used to
+# read the failed comparison as zero unmerged commits and delete the tree and
+# its branch -- which the xteink -> main rename made real. It must refuse, say
+# why, and still let --force through.
+./scripts_local/wt.sh new blindtree >/dev/null 2>&1
+SAVED_MAIN="$(git rev-parse origin/main)"
+q git update-ref -d refs/remotes/origin/main
+OUT5="$(./scripts_local/wt.sh drop blindtree 2>&1)"
+[ -d "$WORK/wt/blindtree" ] && ok "drop refuses when origin/main is missing" || bad "drop removed a tree it could not check: $OUT5"
+case "$OUT5" in
+  *"cannot tell"*) ok "and says it could not compare" ;;
+  *) bad "the refusal does not say it could not compare: $OUT5" ;;
+esac
+./scripts_local/wt.sh drop blindtree --force >/dev/null 2>&1
+[ ! -d "$WORK/wt/blindtree" ] && ok "--force still drops it" || bad "--force did not drop blindtree"
+q git update-ref refs/remotes/origin/main "$SAVED_MAIN"
 
 echo "$((PASS+FAIL)) checks, $FAIL failed"
 [ "$FAIL" -eq 0 ]

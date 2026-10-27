@@ -42,7 +42,7 @@ name: CrossPlay emulator
 
 on:
   push:
-    branches: [xteink]
+    branches: [main]
     paths:
       - "src/**"
       - "lib/**"

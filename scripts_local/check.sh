@@ -46,7 +46,7 @@ cd "$REPO"
 # the browser-artifact gate at the foot of this file is the only check that is
 # branch-conditional, and a constant buried in one `if` is a constant nobody
 # can test against.
-DEPLOY_BRANCH="${DEPLOY_BRANCH:-xteink}"
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 
 TAG="$(printf '%s' "$REPO" | shasum | cut -c1-8)"
 # CHECK_OUTER_LOGS is set by a --committed run for the trial run it spawns, and
@@ -250,18 +250,18 @@ if [ "$_committed" = "1" ]; then
   # against its merge base, intersected with the lines trunk added in the
   # sixty commits before that base. A handful is editing; dozens is a revert
   # nobody asked for. CHECK_ALLOW_UNDO=1 says you mean it.
-  undo_base="$(git merge-base HEAD origin/xteink 2>/dev/null || true)"
+  undo_base="$(git merge-base HEAD origin/main 2>/dev/null || true)"
   if [ -n "$undo_base" ] && [ -z "${CHECK_ALLOW_UNDO:-}" ]; then
     undo_from="$(git rev-parse --verify --quiet "$undo_base~60" || git rev-list --max-parents=0 "$undo_base" | tail -1)"
     undone="$(comm -12 \
       <(git diff "$undo_from" "$undo_base" -- . ':!site/emulator' | grep '^+[^+]' | cut -c2- | awk 'length($0) >= 12' | sort -u) \
       <(git diff "$undo_base" HEAD -- . ':!site/emulator' | grep '^-[^-]' | cut -c2- | awk 'length($0) >= 12' | sort -u) | grep -c . || true)"
     if [ "${undone:-0}" -ge 40 ]; then
-      echo "  this branch UNDOES trunk: $undone lines that landed on xteink shortly before it branched are removed by its own commits."
+      echo "  this branch UNDOES trunk: $undone lines that landed on main shortly before it branched are removed by its own commits."
       echo "  That is the shape of a stale tree committed on top of a moved trunk (git reset --soft, then commit), and a green"
       echo "  gate here would prove nothing: the suites that would fail are among the deletions. Most undone, by file:"
       git diff "$undo_base" HEAD --numstat -- . ':!site/emulator' | sort -k2 -rn | head -5 | awk '{printf "    %s (-%s)\n", $3, $2}'
-      echo "  Rebuild the branch on origin/xteink (git rebase, or cherry-pick your commits onto it). CHECK_ALLOW_UNDO=1 if you mean to revert."
+      echo "  Rebuild the branch on origin/main (git rebase, or cherry-pick your commits onto it). CHECK_ALLOW_UNDO=1 if you mean to revert."
       die
     fi
   fi

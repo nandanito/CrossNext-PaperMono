@@ -39,7 +39,7 @@
 # guard measure differently -- gate start is the only honest measuring point,
 # and a run that goes in current and comes out behind has not measured wrongly.
 #
-#   scripts_local/tree_freshness.sh [--fetch] [--ref origin/xteink] [repo]
+#   scripts_local/tree_freshness.sh [--fetch] [--ref origin/main] [repo]
 #
 # Exit: 0 up to date (or nothing to compare against)
 #       3 behind, and none of the missing commits can reach a device image
@@ -51,7 +51,7 @@
 # check. A stale tree missing a new suite passes by not running it.
 set -uo pipefail
 
-REF="origin/xteink"
+REF="origin/main"
 FETCH=""
 repo=""
 while [ $# -gt 0 ]; do

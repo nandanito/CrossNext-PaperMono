@@ -21,7 +21,7 @@ const Config& config() {
 bool Store::read(int index) {
   HalFile file;
   if (!Storage.openFileForRead("HOME-MENU", kPaths[index], file)) return false;
-  if (file.read(buffer, 4) == 4 && !std::memcmp(buffer, "HMC", 3) && buffer[3] > '3') readOnly = true;
+  if (file.read(buffer, 4) == 4 && !std::memcmp(buffer, "HMC", 3) && buffer[3] > kSaveVersion) readOnly = true;
   readLength = file.size();
   return (readLength == kSaveBytes || readLength == kLegacySaveBytes) && file.seek(0) &&
          file.read(buffer, readLength) == static_cast<int>(readLength);
@@ -33,7 +33,7 @@ void Store::load() {
   for (int n = 0; n < 2; ++n) {
     existed |= Storage.exists(kPaths[n]);
     if (!read(n)) continue;
-    if (!std::memcmp(buffer, "HMC", 3) && buffer[3] > '3') {
+    if (!std::memcmp(buffer, "HMC", 3) && buffer[3] > kSaveVersion) {
       readOnly = true;
       continue;
     }
@@ -49,7 +49,10 @@ void Store::load() {
 }
 bool Store::save(const Config& next) {
   load();
-  if (std::memcmp(&current, &next, sizeof(Config)) == 0) return true;
+  if (current.visible == next.visible && !std::memcmp(current.labels, next.labels, sizeof(current.labels)) &&
+      !std::memcmp(current.shortcuts, next.shortcuts, sizeof(current.shortcuts)) &&
+      !std::memcmp(current.order, next.order, sizeof(current.order)))
+    return true;
   if (readOnly || !Storage.ensureDirectoryExists("/.crosspoint")) return false;
   encode(next, generation + 1, buffer);
   uint32_t found = 0;

@@ -37,19 +37,19 @@ seed_clone() {
   git init --quiet "$WORK/seed"
   git -C "$WORK/seed" config user.email t@t
   git -C "$WORK/seed" config user.name t
-  git -C "$WORK/seed" checkout --quiet -b xteink
+  git -C "$WORK/seed" checkout --quiet -b main
   mkdir -p "$WORK/seed/src" "$WORK/seed/docs"
   echo base > "$WORK/seed/src/main.cpp"
   echo base > "$WORK/seed/docs/readme.md"
   git -C "$WORK/seed" add -A
   git -C "$WORK/seed" commit --quiet --no-verify -m base
   git -C "$WORK/seed" remote add origin "$WORK/remote"
-  git -C "$WORK/seed" push --quiet origin xteink 2>/dev/null
+  git -C "$WORK/seed" push --quiet origin main 2>/dev/null
   # --branch matters: a bare init points HEAD at its own default branch, so a
   # plain clone lands on an unborn HEAD that has no relationship to
-  # origin/xteink at all. That is a different bug from staleness and case 8
+  # origin/main at all. That is a different bug from staleness and case 8
   # covers it deliberately.
-  git clone --quiet --branch xteink "$WORK/remote" "$WORK/clone" 2>/dev/null
+  git clone --quiet --branch main "$WORK/remote" "$WORK/clone" 2>/dev/null
   git -C "$WORK/clone" config user.email t@t
   git -C "$WORK/clone" config user.name t
   mkdir -p "$WORK/clone/scripts_local"
@@ -65,7 +65,7 @@ advance_remote() {  # path, content
   echo "$2" > "$WORK/seed/$1"
   git -C "$WORK/seed" add -A
   git -C "$WORK/seed" commit --quiet --no-verify -m "change $1"
-  git -C "$WORK/seed" push --quiet origin xteink 2>/dev/null
+  git -C "$WORK/seed" push --quiet origin main 2>/dev/null
   git -C "$WORK/clone" fetch --quiet origin 2>/dev/null
 }
 
@@ -152,7 +152,7 @@ git -C "$WORK/lonely" add -A
 git -C "$WORK/lonely" commit --quiet --no-verify -m base
 out="$("$PROBE" "$WORK/lonely" 2>&1)"; rc=$?
 if [ "$rc" -eq 0 ] && [ -z "$out" ]; then ok; else
-  bad "a repo with no origin/xteink was not silent+0 (rc=$rc): $out"
+  bad "a repo with no origin/main was not silent+0 (rc=$rc): $out"
 fi
 
 # 7. Not a git tree at all: silent, exit 0.

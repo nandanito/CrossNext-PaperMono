@@ -10,6 +10,8 @@ constexpr int kBooksPerPage = 5;
 constexpr int kRecentBooks = 10;
 enum class Period { Calendar, Day, Week, Month, Year };
 enum class BookFilter { Finished, Recent };
+enum class Source { Local, Unified };
+enum class RecordKind : uint8_t { Session, Completion };
 struct Date {
   int year = 0, month = 0, day = 0;
 };
@@ -36,6 +38,7 @@ struct Record {
   int localDay = 0;
   uint32_t secondOfDay = 0;
   bool firstCompletion = false;
+  RecordKind kind = RecordKind::Session;
 };
 struct Summary {
   uint64_t seconds = 0, pages = 0;

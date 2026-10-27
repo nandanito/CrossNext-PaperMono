@@ -765,7 +765,7 @@ STUB
   chmod +x "$WORK/bin/pio"
 }
 
-# A throwaway repo with an origin/xteink to diff against, carrying the REAL
+# A throwaway repo with an origin/main to diff against, carrying the REAL
 # rule rather than a stub of it: a stub would test that check.sh can read an
 # exit code, which is not the thing that can hurt anybody.
 #
@@ -775,7 +775,7 @@ STUB
 scope_fixture_once() {
   rm -rf "$WORK/scoperepo" "$WORK/scopeorigin.git"
   (
-    git init -q --bare -b xteink "$WORK/scopeorigin.git"
+    git init -q --bare -b main "$WORK/scopeorigin.git"
     git clone -q "$WORK/scopeorigin.git" "$WORK/scoperepo"
     cd "$WORK/scoperepo" || exit 1
     git config user.email t@t; git config user.name t
@@ -785,7 +785,7 @@ scope_fixture_once() {
     echo x > scripts_local/check.sh
     cp "$SCOPE_TOOL" scripts_local/device-build-needed.sh
     chmod +x scripts_local/device-build-needed.sh
-    git add -A; git commit -qm base; git push -q -u origin xteink
+    git add -A; git commit -qm base; git push -q -u origin main
   ) >/dev/null 2>&1
 }
 
@@ -794,8 +794,8 @@ scope_fixture_once() {
 scope_fixture() {  # $@ = files to change on top of the base commit
   (
     cd "$WORK/scoperepo" || exit 1
-    git checkout -q xteink
-    git reset -q --hard origin/xteink
+    git checkout -q main
+    git reset -q --hard origin/main
     git clean -fdq
     chmod +x scripts_local/device-build-needed.sh
     for f in "$@"; do mkdir -p "$(dirname "$f")"; echo change >> "$f"; done
@@ -2045,7 +2045,7 @@ fi
 # --- the undo guard: a branch that undoes what trunk recently landed ---------
 #
 # The block is lifted between its own markers and run in a fixture repository
-# with a trunk of sixty-line commits and refs/remotes/origin/xteink pointing at
+# with a trunk of sixty-line commits and refs/remotes/origin/main pointing at
 # its tip. Fires on a stale tree committed on top of the moved trunk; stays
 # silent on an ordinary branch, on a branch deleting its own additions, and
 # when CHECK_ALLOW_UNDO says the revert is meant.
@@ -2059,12 +2059,12 @@ PY
 [ -s "$WORK/undo.sh" ] || { echo "FAIL checksh  could not lift the undo guard out of check.sh"; failed=$((failed + 1)); }
 grep -q 'die$' "$WORK/undo.sh" || { echo "FAIL checksh  the undo guard no longer calls die, so it cannot refuse"; failed=$((failed + 1)); }
 
-undo_repo() {  # builds $WORK/undo with trunk T (base + 3 commits x 30 lines) and origin/xteink = T
+undo_repo() {  # builds $WORK/undo with trunk T (base + 3 commits x 30 lines) and origin/main = T
   rm -rf "$WORK/undo"; mkdir -p "$WORK/undo"
-  ( cd "$WORK/undo" && git init -q -b xteink && git config user.email t@t && git config user.name t
+  ( cd "$WORK/undo" && git init -q -b main && git config user.email t@t && git config user.name t
     seq 1 5 | sed 's/^/base line number /' > a.txt && git add -A && git commit -qm base && git tag base
     for f in f1 f2 f3; do seq 1 30 | sed "s/^/trunk $f added this distinctive line /" > "$f.txt"; git add -A; git commit -qm "add $f"; done
-    git update-ref refs/remotes/origin/xteink HEAD )
+    git update-ref refs/remotes/origin/main HEAD )
 }
 undo_run() {  # echoes fired|silent for HEAD of $WORK/undo; die leaves a marker, since the block's own output is captured
   # CHECK_ALLOW_UNDO is UNSET here, and that is the whole hermeticity of this

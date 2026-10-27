@@ -11,7 +11,7 @@ who may be new to embedded development.
 - [Touch and UI Development](./touch-and-ui.md)
 
 If you are new, start with [Getting Started](./getting-started.md). It is
-written for **CrossNext**: it uses the included SDK sources, the `xteink` branch
+written for **CrossNext**: it uses the included SDK sources, the `main` branch
 and explicitly selected X4 Pro build environments. A build that names no
 environment targets another chip. `architecture.md` and
 `touch-and-ui.md` are upstream's and describe the firmware both projects share.

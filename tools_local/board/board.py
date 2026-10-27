@@ -1611,7 +1611,7 @@ def derived(c):
     tdir = root / tree if not pathlib.Path(tree).is_absolute() else pathlib.Path(tree)
     try:
         r = subprocess.run(
-            ["git", "-C", str(tdir), "rev-list", "--count", f"origin/xteink..{branch}"],
+            ["git", "-C", str(tdir), "rev-list", "--count", f"origin/main..{branch}"],
             capture_output=True,
             text=True,
             timeout=10,
@@ -1782,7 +1782,7 @@ def cmd_list(st, a):
 # note before changing either. A qualifier that is always on is one people
 # scroll past, which is the failure both exist to prevent.
 STALE_AFTER_H = 24
-TRUNK = "origin/xteink"
+TRUNK = "origin/main"
 
 
 def cli_repo():

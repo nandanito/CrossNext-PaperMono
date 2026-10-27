@@ -322,6 +322,8 @@ int BaseTheme::headerStatusInset() { return UITheme::getInstance().getMetrics().
 void BaseTheme::applyHeaderStatus(const GfxRenderer& renderer, freeink::ui::HeaderProps& props) {
   const ThemeMetrics& metrics = UITheme::getInstance().getMetrics();
   auto& status = props.status;
+  status.clockText = nullptr;
+  status.battery.label = nullptr;
 
   // Status text stays at the fixed small font on every screen: FONT_LABEL is
   // bound to SMALL_FONT_ID by makeUiTarget() (FUI screens) and drawHeader()
@@ -357,7 +359,7 @@ void BaseTheme::applyHeaderStatus(const GfxRenderer& renderer, freeink::ui::Head
   // the boxes are invisible and minTouchSize pads the tap target.
   constexpr int16_t headerButtonSize = 48;
   const int16_t bandHeight = static_cast<int16_t>(metrics.headerHeight);
-  const int16_t strip = static_cast<int16_t>(metrics.batteryBarHeight);
+  const int16_t strip = static_cast<int16_t>(std::max(metrics.batteryBarHeight, SETTINGS.clockShowInHeader ? 28 : 0));
   const int titleFontId = uiScaleSpec().titleFontId;
   const int16_t opticalDrop =
       static_cast<int16_t>((renderer.getLineHeight(titleFontId) - renderer.getTextHeight(titleFontId)) / 2);
@@ -401,6 +403,7 @@ void BaseTheme::drawHeader(const GfxRenderer& renderer, Rect rect, const char* t
   // subtitles.
   ui.target.setFont(fui::GfxRendererTarget::FONT_SMALL, SMALL_FONT_ID);
   ui.target.setFont(fui::GfxRendererTarget::FONT_LABEL, SMALL_FONT_ID);
+  ui.target.setFont(fui::GfxRendererTarget::FONT_CLOCK, UI_12_FONT_ID);
   // Callers pass a full-width header rect, so the battery/title would sit at the
   // true screen edges — clipped on rounded-corner panels (EEGO A4). Inset the band
   // horizontally by the board's viewable insets so header chrome clears the bezel.
@@ -789,15 +792,7 @@ Rect BaseTheme::drawPopup(const GfxRenderer& renderer, const char* message) cons
   const auto& box = popup.body;
   const int x = box.x, y = box.y, w = box.width, h = box.height;
 
-  const bool useRoundedPopup = metrics.popupCornerRadius > 0;
-  if (useRoundedPopup) {
-    renderer.fillRoundedRect(x - frameThickness, y - frameThickness, w + frameThickness * 2, h + frameThickness * 2,
-                             metrics.popupCornerRadius + frameThickness, Color::White);
-    renderer.fillRoundedRect(x, y, w, h, metrics.popupCornerRadius, Color::Black);
-  } else {
-    renderer.fillRect(x - frameThickness, y - frameThickness, w + frameThickness * 2, h + frameThickness * 2, true);
-    renderer.fillRect(x, y, w, h, false);
-  }
+  popupui::paintChrome(target, popup, frameThickness, metrics.popupCornerRadius);
 
   const auto family = metrics.popupTextBold ? EpdFontFamily::BOLD : EpdFontFamily::REGULAR;
   freeink::ui::layoutText(target, popup.text, message, popup.style, [&](const char* line, freeink::ui::Rect run) {

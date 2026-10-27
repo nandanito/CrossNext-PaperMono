@@ -37,10 +37,10 @@ setup() {
     git config user.email t@t; git config user.name t
     git config core.hooksPath "$WORK/hooks"
     git remote add origin "$WORK/remote"
-    git checkout --quiet -b xteink
+    git checkout --quiet -b main
     echo base > file.txt
     git add -A && git commit --quiet --no-verify -m "base"
-    git push --quiet origin xteink 2>/dev/null
+    git push --quiet origin main 2>/dev/null
   )
 }
 mkdir -p "$WORK/hooks"
@@ -58,7 +58,7 @@ commit_in_clone() {  # subject
 # 1. An ordinary push, no bump anywhere: must go through untouched.
 setup
 commit_in_clone "fix: something ordinary"
-if (cd "$WORK/clone" && git push --quiet origin xteink 2>/dev/null); then ok; else
+if (cd "$WORK/clone" && git push --quiet origin main 2>/dev/null); then ok; else
   bad "an ordinary push was refused; the hook is crying wolf on every commit"
 fi
 
@@ -67,21 +67,21 @@ fi
 setup
 commit_in_clone "chore: crossplay 9.9.9"
 (cd "$WORK/clone" && git tag v9.9.9)
-if (cd "$WORK/clone" && git push --quiet origin xteink v9.9.9 2>/dev/null); then ok; else
+if (cd "$WORK/clone" && git push --quiet origin main v9.9.9 2>/dev/null); then ok; else
   bad "the owner's own 'push branch and tag together' was refused"
 fi
 
 # 3. THE BUG. Somebody else's bump, no tag anywhere: must be refused.
 setup
 commit_in_clone "chore: crossplay 9.9.9"
-if (cd "$WORK/clone" && git push --quiet origin xteink 2>/dev/null); then
+if (cd "$WORK/clone" && git push --quiet origin main 2>/dev/null); then
   bad "a bump with no tag was published; that is another session's release train"
 else ok; fi
 
 # 4. The override, for the deliberate case.
 setup
 commit_in_clone "chore: crossplay 9.9.9"
-if (cd "$WORK/clone" && CROSSPLAY_ALLOW_UNTAGGED_BUMP=1 git push --quiet origin xteink 2>/dev/null); then ok; else
+if (cd "$WORK/clone" && CROSSPLAY_ALLOW_UNTAGGED_BUMP=1 git push --quiet origin main 2>/dev/null); then ok; else
   bad "the documented override did not let the push through"
 fi
 
@@ -89,7 +89,7 @@ fi
 #    non-zero: check it names the version it refused.
 setup
 commit_in_clone "chore: crossplay 9.9.9"
-msg="$( (cd "$WORK/clone" && git push origin xteink 2>&1 >/dev/null) )"
+msg="$( (cd "$WORK/clone" && git push origin main 2>&1 >/dev/null) )"
 case "$msg" in
   *"crossplay 9.9.9"*) ok ;;
   *) bad "the refusal does not name the release it refused: $msg" ;;
