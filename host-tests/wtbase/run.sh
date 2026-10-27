@@ -186,5 +186,24 @@ record droptree
 [ -e "$WORK/.board/trees/droptree.json" ] && bad "drop left the record behind" || ok "and clears its record"
 unset BOARD_ROOT
 
+echo "wt.sh drop refuses when it cannot compare"
+
+# Without origin/main, drop has no answer to "is this work merged?". It used to
+# read the failed comparison as zero unmerged commits and delete the tree and
+# its branch -- which the xteink -> main rename made real. It must refuse, say
+# why, and still let --force through.
+./scripts_local/wt.sh new blindtree >/dev/null 2>&1
+SAVED_MAIN="$(git rev-parse origin/main)"
+q git update-ref -d refs/remotes/origin/main
+OUT5="$(./scripts_local/wt.sh drop blindtree 2>&1)"
+[ -d "$WORK/wt/blindtree" ] && ok "drop refuses when origin/main is missing" || bad "drop removed a tree it could not check: $OUT5"
+case "$OUT5" in
+  *"cannot tell"*) ok "and says it could not compare" ;;
+  *) bad "the refusal does not say it could not compare: $OUT5" ;;
+esac
+./scripts_local/wt.sh drop blindtree --force >/dev/null 2>&1
+[ ! -d "$WORK/wt/blindtree" ] && ok "--force still drops it" || bad "--force did not drop blindtree"
+q git update-ref refs/remotes/origin/main "$SAVED_MAIN"
+
 echo "$((PASS+FAIL)) checks, $FAIL failed"
 [ "$FAIL" -eq 0 ]

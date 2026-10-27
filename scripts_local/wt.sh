@@ -149,14 +149,19 @@ cmd_drop() {
 
   # Refuse to throw away work that is not in main yet. Removing a worktree
   # deletes its build output and its screenshots too, so a wrong call here is
-  # not a small mistake.
+  # not a small mistake. A comparison that cannot run (no origin/main) is not
+  # "nothing unmerged": it refuses like unmerged work, as prune already does.
   local unmerged dirty
   dirty="$(git -C "$dir" status --porcelain --ignore-submodules=untracked | grep -c '' | tr -d ' ')"
-  unmerged="$(git -C "$INTEGRATION" rev-list --count origin/main.."$branch" 2>/dev/null || echo 0)"
+  unmerged="$(git -C "$INTEGRATION" rev-list --count origin/main.."$branch" 2>/dev/null || echo unknown)"
   if [ "$dirty" != "0" ] || [ "$unmerged" != "0" ]; then
     echo "refusing to drop $name:" >&2
     [ "$dirty" != "0" ] && echo "  $dirty uncommitted file(s)" >&2
-    [ "$unmerged" != "0" ] && echo "  $unmerged commit(s) not in main" >&2
+    if [ "$unmerged" = "unknown" ]; then
+      echo "  cannot tell which commits are not in main (is origin/main fetched?)" >&2
+    elif [ "$unmerged" != "0" ]; then
+      echo "  $unmerged commit(s) not in main" >&2
+    fi
     echo >&2
     echo "merge it first, or pass --force if you mean to lose it." >&2
     [ "${2:-}" != "--force" ] && exit 1
