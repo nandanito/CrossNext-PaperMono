@@ -14,8 +14,11 @@ and the SDK's `BoardConfig::PAPER_MONO` describe:
 - Two user buttons on GPIO2 and GPIO3, mapped to Up and Down.
 - M5PM1 power management and single-channel frontlight; M5IOE1 controls
   display, touch and SD power/reset. Brightness is adjustable; warmth is not.
-- SDMMC storage and RX8130 RTC. The SDK does not support this board's BMI270,
-  so tilt page turning is unavailable.
+- SDMMC storage and RX8130 RTC.
+- BMI270 IMU, backported from FreeInk SDK PR #152. It enables
+  **Tilt Page Turn** (off by default). The sensor's 8 KB configuration loads on
+  first use, not at boot. Its axis flips come from the SDK profile and have not
+  been verified on a device.
 
 The SDK transforms touch coordinates into its landscape framebuffer and handles
 panel rotation. The hardware's touch range excludes approximately five pixels

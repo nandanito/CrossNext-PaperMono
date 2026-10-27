@@ -25,6 +25,12 @@ notice and permission notice in all copies, and the icons are rasterised into
 bitmaps at build time, so this entry is how that notice reaches a flashed
 device.
 
+**BMI270 configuration file**, BSD-3-Clause, Copyright (c) 2023 Bosch Sensortec
+GmbH. From Bosch Sensortec's
+[BMI270_SensorAPI](https://github.com/boschsensortec/BMI270_SensorAPI) and
+compiled into PaperMono images only. The licence text is reproduced in
+`freeink-sdk/libs/hardware/Imu/src/Bmi270ConfigFile.h` and `freeink-sdk/NOTICE`.
+
 **Noto Sans Symbols 2**, SIL Open Font License 1.1. The Solitaire suit glyphs
 are drawn from it. Full text at `src/apps_local/solitaire/art/OFL.txt`, with the
 derivation documented in `src/apps_local/solitaire/art/README.md`.
