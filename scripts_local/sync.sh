@@ -32,7 +32,7 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 cd "$REPO"
 
-WORK_BRANCH="xteink"
+WORK_BRANCH="main"
 MIRROR="base"
 # The durable upstream trunk. This fork was based on crosspoint/feat-touch-ui,
 # the X4 Pro beta branch, until upstream deleted it unmerged (found

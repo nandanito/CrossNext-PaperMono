@@ -69,7 +69,7 @@
 # uncertain: an unresolvable base, a git that will not answer, a release gate.
 set -uo pipefail
 
-BASE_REF="origin/xteink"
+BASE_REF="origin/main"
 QUIET=""
 # --range asks the same question about somebody else's commits rather than
 # ours: "do the commits this tree is MISSING touch a device image?" The table
