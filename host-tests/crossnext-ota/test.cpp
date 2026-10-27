@@ -9,6 +9,24 @@
 #include "../../src/network/ReleaseSources.h"
 
 namespace {
+// Compiled once per board by run.sh: PaperMono checks this fork's releases,
+// every other board keeps CrossNext's.
+#if FREEINK_DEVICE_PAPERMONO
+constexpr const char* kBoard = "papermono";
+constexpr const char* kSource = "https://api.github.com/repos/nandanito/CrossNext-PaperMono/releases/latest";
+constexpr const char* kAlias = "firmware-papermono.bin";
+constexpr const char* kAliasUrl =
+    "https://github.com/nandanito/CrossNext-PaperMono/releases/download/v1.0.1/firmware-papermono.bin";
+constexpr const char* kOtherBoardAlias = "CrossNext-X4PRO-OTA.bin";
+#else
+constexpr const char* kBoard = "x4pro";
+constexpr const char* kSource = "https://api.github.com/repos/manuelx900/CrossNext/releases/latest";
+constexpr const char* kAlias = "CrossNext-X4PRO-OTA.bin";
+constexpr const char* kAliasUrl =
+    "https://github.com/manuelx900/CrossNext/releases/download/v1.0.1/CrossNext-X4PRO-OTA.bin";
+constexpr const char* kOtherBoardAlias = "firmware-papermono.bin";
+#endif
+
 int checks = 0, failed = 0;
 void check(bool ok, const char* message) {
   ++checks;
@@ -31,10 +49,7 @@ void parse(const std::string& assets, bool expected) {
     check(std::strcmp(parser.getTagName(), "v1.0.1") == 0, "release tag retained");
     check(parser.foundFirmware() == expected, "only exact CrossNext OTA alias matches");
     if (expected) {
-      check(
-          std::strcmp(parser.getFirmwareUrl(),
-                      "https://github.com/manuelx900/CrossNext/releases/download/v1.0.1/CrossNext-X4PRO-OTA.bin") == 0,
-          "selected URL belongs to the application alias");
+      check(std::strcmp(parser.getFirmwareUrl(), kAliasUrl) == 0, "selected URL belongs to the application alias");
       check(parser.getFirmwareSize() == 7500000, "size belongs to selected asset");
     }
   }
@@ -43,22 +58,19 @@ void parse(const std::string& assets, bool expected) {
 
 int main() {
   check(release_sources::kCount == 1, "one authoritative source");
-  check(
-      std::strcmp(release_sources::kUrls[0], "https://api.github.com/repos/manuelx900/CrossNext/releases/latest") == 0,
-      "CrossNext GitHub release source");
-  check(std::strcmp(CROSSPOINT_RELEASE_ASSET, "CrossNext-X4PRO-OTA.bin") == 0, "stable X4 Pro alias");
-  const std::string application =
-      asset(CROSSPOINT_RELEASE_ASSET,
-            "https://github.com/manuelx900/CrossNext/releases/download/v1.0.1/CrossNext-X4PRO-OTA.bin", 7500000);
+  check(std::strcmp(release_sources::kUrls[0], kSource) == 0, "release source for this board");
+  check(std::strcmp(CROSSPOINT_RELEASE_ASSET, kAlias) == 0, "stable application alias for this board");
+  const std::string application = asset(CROSSPOINT_RELEASE_ASSET, kAliasUrl, 7500000);
   const std::string others =
       asset("firmware.bin", "https://example.invalid/upstream.bin", 1) + "," +
       asset("CrossNext-X4PRO-Firmware-v1.0.1-factory.bin", "https://example.invalid/factory.bin", 2) + "," +
       asset("CrossNext-X4PRO-Firmware-v1.0.1.zip", "https://example.invalid/firmware.zip", 3) + "," +
-      asset("CrossNext-STICKY-OTA.bin", "https://example.invalid/other-board.bin", 4);
+      asset("CrossNext-STICKY-OTA.bin", "https://example.invalid/other-board.bin", 4) + "," +
+      asset(kOtherBoardAlias, "https://example.invalid/other-board-alias.bin", 5);
   parse(application + "," + others, true);
   parse(others + "," + application, true);
   parse(others, false);
   parse("", false);
-  std::printf("crossnext-ota: %d checks, %d failed\n", checks, failed);
+  std::printf("crossnext-ota (%s): %d checks, %d failed\n", kBoard, checks, failed);
   return failed ? 1 : 0;
 }

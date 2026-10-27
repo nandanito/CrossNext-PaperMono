@@ -1,19 +1,23 @@
 <h1 align="center">
   <img src="site/assets/logo.svg#gh-light-mode-only" width="72" alt="CrossNext"><img src="site/assets/logo-dark.svg#gh-dark-mode-only" width="72" alt="CrossNext"><br>
-  CrossNext
+  CrossNext for PaperMono
 </h1>
 
-[Español](README.es.md) · [Changes and upstream credits](docs/crossnext-changes.md) · [Installation](docs/install.md)
+[Español](README.es.md) · [Changes and upstream credits](docs/crossnext-changes.md) · [PaperMono notes](docs/papermono.md) · [Installation](docs/install.md)
 
-CrossNext brings reading, study tools and games to the **Xteink X4 Pro**.
+> This repository ports [CrossNext](https://github.com/manuelx900/CrossNext) to the
+> **M5Stack PaperMono** and PaperMono-Lite. The features below are CrossNext's,
+> and its screenshots were taken on the Xteink X4 Pro. PaperMono builds are new
+> and have not yet been verified on hardware; see the [PaperMono notes](docs/papermono.md).
+> For the X4 Pro, install [upstream CrossNext](https://github.com/manuelx900/CrossNext).
+
+CrossNext brings reading, study tools and games to small e-ink devices.
 Read a book, save new vocabulary, review flashcards, track your reading and take
 a break with a game, all on the same e-ink device.
 
-[![Support me on Ko-fi](site/assets/support-ko-fi.svg)](https://ko-fi.com/manuelx900)
-
 Choose a framed Home screen or a cover carousel, arrange your own app and game
 shortcuts, and adjust the fonts, reading controls and sleep wallpapers to suit you.
-This release supports **X4 Pro only** (ESP32-S3).
+This fork targets the **PaperMono and PaperMono-Lite** (ESP32-S3).
 
 CrossNext is based on [CrossPlay 1.14.2](https://github.com/ma-r-s/crossplay)
 and [CrossPoint 1.6.5](https://github.com/crosspoint-reader/crosspoint-reader),
@@ -106,24 +110,20 @@ Optional **CrossPoint Sync** keeps your account history and new local reading in
 
 ## Install it
 
-Choose the package matching the device:
+No PaperMono release has been published yet. Until one is, build the
+`papermono` environment from source (see [Develop and verify](#develop-and-verify)).
+Both PaperMono and PaperMono-Lite use the same image.
 
-| Model | ZIP | Application / SD update | Factory / USB installation |
-| --- | --- | --- | --- |
-| X4 Pro | `CrossNext-X4PRO-Firmware-v1.1.6.zip` | `CrossNext-X4PRO-Firmware-v1.1.6.bin` | `CrossNext-X4PRO-Firmware-v1.1.6-factory.bin` |
-
-Generated ZIPs are in `dist/`, and raw images in `dist/CrossNext/`.
-Each firmware ZIP includes SHA-256 checksums, model-specific images and notes.
 Application images belong in a compatible SD updater/OTA slot, or at `0x10000`;
 factory images contain the bootloader and partitions and belong at `0x0` over USB.
-Read [the installation guide](docs/install.md) and back up the microSD first.
-The plain X4/X3 use another chip; these packages do not target them or PaperMono.
+Read [the installation guide](docs/install.md) and the [PaperMono notes](docs/papermono.md),
+and back up the microSD first. These images do not target the X4 Pro, X4 or X3.
 
-Use **Settings → Device → Check for Updates** to get updates from
-[CrossNext GitHub Releases](https://github.com/manuelx900/CrossNext/releases).
-The updater checks for a newer version and asks before installing the X4 Pro
-application. Release maintainers attach `CrossNext-X4PRO-OTA.bin` alongside the
-versioned ZIP; see [online updates](docs/install.md#online-update-source).
+On a PaperMono, **Settings → Device → Check for Updates** checks this fork's
+[GitHub Releases](https://github.com/nandanito/CrossNext-PaperMono/releases).
+The updater checks for a newer version and asks before installing the application.
+Release maintainers attach `firmware-papermono.bin` to each release; see
+[online updates](docs/install.md#online-update-source).
 
 `CrossNext-Resources.zip` contains reader fonts, dictionaries and the contents
 required by Reading Quest, PET and The Intercept. Merge its folders into the
@@ -149,14 +149,15 @@ The original [CrossPlay demo](https://crossplay.ma-r-s.com) is maintained upstre
 
 ## Develop and verify
 
-Use `x4pro` for the device and `simulator_x4_pro` for the simulator;
-the upstream `default` environment targets a different chip. In a configured
+Use `papermono` for the device, `gh_release_papermono` for a release image and
+`simulator_x4_pro` for the simulator; there is no PaperMono simulator, and the
+upstream `default` environment targets a different chip. In a configured
 development checkout, run `./scripts_local/check.sh` from your own worktree.
 Use the repository's `./bin/clang-format-fix -g` wrapper for changed C/C++ files.
 Read the [contributor guide](docs/contributing/getting-started.md) and
 [local script documentation](scripts_local/README.md) before changing firmware.
-Inherited CrossPlay automation is restricted to its original repository; CrossNext
-releases are published manually.
+Inherited CrossPlay automation is restricted to its original repository; releases
+are published manually.
 
 Useful feature details: [Flashcards](docs/apps/flashcards-ui.md),
 [Words](docs/apps/words.md), [Pomodoro](docs/pomodoro.md),
@@ -176,7 +177,7 @@ this fork's adaptations without claiming those inherited projects as new work.
 
 ## Support CrossNext
 
-Thank you for using CrossNext and helping it improve. If you would like to support
-its ongoing development, please consider supporting me on Ko-fi.
+CrossNext is developed by [manuelx900](https://github.com/manuelx900). If you would
+like to support its ongoing development, please consider supporting its author on Ko-fi.
 
 [![Support me on Ko-fi](site/assets/support-ko-fi.svg)](https://ko-fi.com/manuelx900)

@@ -1,15 +1,20 @@
-# CrossNext
+# CrossNext para PaperMono
 
-[English](README.md) · [Novedades y créditos](docs/crossnext-changes.md)
+[English](README.md) · [Novedades y créditos](docs/crossnext-changes.md) · [Notas de PaperMono](docs/papermono.md)
 
-CrossNext reúne lectura, herramientas de estudio y juegos en el **Xteink X4 Pro**.
+> Este repositorio adapta [CrossNext](https://github.com/manuelx900/CrossNext) al
+> **M5Stack PaperMono** y al PaperMono-Lite. Las funciones descritas son las de
+> CrossNext y sus capturas se tomaron en el Xteink X4 Pro. Las compilaciones para
+> PaperMono son nuevas y aún no se han verificado en el dispositivo; consulta las
+> [notas de PaperMono](docs/papermono.md). Para el X4 Pro, instala
+> [CrossNext original](https://github.com/manuelx900/CrossNext).
+
+CrossNext reúne lectura, herramientas de estudio y juegos en pequeños dispositivos de tinta electrónica.
 Lee un libro, guarda vocabulario, repasa flashcards, registra tu progreso y juega
 sin cambiar de dispositivo. Elige entre Inicio con marco o carrusel y personaliza
 sus accesos, los controles de lectura y tus fondos de pantalla.
 
-[![Apoyar en Ko-fi](site/assets/support-ko-fi.svg)](https://ko-fi.com/manuelx900)
-
-Esta entrega es exclusivamente para **X4 Pro** (ESP32-S3).
+Este fork está dirigido al **PaperMono y PaperMono-Lite** (ESP32-S3).
 CrossNext parte de **CrossPlay 1.14.2**, con base **CrossPoint 1.6.5**.
 Referencias adicionales: [CrossInk](https://github.com/uxjulia/CrossInk),
 [CrossDiTo](https://github.com/dito94/CrossDiTo) y
@@ -99,20 +104,18 @@ La sincronización opcional con **CrossPoint Sync** reúne el historial de tu cu
 
 ## Archivos para instalar
 
-El paquete `CrossNext-X4PRO-Firmware-v1.1.6.zip` contiene dos imágenes y sus sumas SHA-256:
+Todavía no se ha publicado ninguna versión para PaperMono. Mientras tanto,
+compila el entorno `papermono` desde las fuentes (consulta
+[Compilar y contribuir](#compilar-y-contribuir)). PaperMono y PaperMono-Lite usan
+la misma imagen.
 
-| Archivo | Uso |
-| --- | --- |
-| `CrossNext-X4PRO-Firmware-v1.1.6.bin` | Aplicación para X4 Pro; actualización compatible/OTA o dirección `0x10000`. |
-| `CrossNext-X4PRO-Firmware-v1.1.6-factory.bin` | Imagen completa para instalación/recuperación del X4 Pro, en `0x0`. |
-
-Usa el paquete que corresponda al modelo y conserva una copia de la microSD antes
-de actualizar. Los X4/X3 normales usan otro chip. Consulta
-[instalación y recuperación](docs/install.md) para la herramienta y los pasos.
-En **Ajustes → Dispositivo → Verificar actualizaciones** puedes buscar
-versiones nuevas en [GitHub Releases de CrossNext](https://github.com/manuelx900/CrossNext/releases).
-Se solicita confirmación antes de instalar la aplicación para X4 Pro. Cada Release
-debe incluir `CrossNext-X4PRO-OTA.bin` como archivo adjunto independiente; consulta
+Conserva una copia de la microSD antes de actualizar. Estas imágenes no son para
+X4 Pro, X4 ni X3. Consulta [instalación y recuperación](docs/install.md) y las
+[notas de PaperMono](docs/papermono.md) para la herramienta y los pasos.
+En un PaperMono, **Ajustes → Dispositivo → Verificar actualizaciones** busca
+versiones nuevas en los [GitHub Releases de este fork](https://github.com/nandanito/CrossNext-PaperMono/releases).
+Se solicita confirmación antes de instalar la aplicación. Cada Release debe incluir
+`firmware-papermono.bin` como archivo adjunto independiente; consulta
 [la guía de instalación](docs/install.md#online-update-source).
 
 `CrossNext-Resources.zip` contiene fuentes, diccionarios y los contenidos de
@@ -135,13 +138,14 @@ dispositivo. Consulta [el contenido de demostración](docs/simulator-showcase.md
 
 ## Compilar y contribuir
 
-Esta entrega compila y verifica únicamente X4 Pro (`x4pro` / `gh_release_x4pro`)
-y el simulador `simulator_x4_pro`. El código conserva otros entornos heredados,
-incluido `sticky`, que quedan fuera de esta entrega. No uses `default` para X4 Pro.
+Usa `papermono` para el dispositivo, `gh_release_papermono` para una imagen de
+publicación y `simulator_x4_pro` para el simulador; no existe un simulador de
+PaperMono. El código conserva otros entornos heredados, incluidos `x4pro` y
+`sticky`. No uses `default`, que corresponde a otro chip.
 En el entorno de desarrollo configurado, ejecuta `./scripts_local/check.sh`
 desde tu propio árbol de trabajo. En Windows consulta la guía del simulador.
 Las automatizaciones heredadas de CrossPlay están limitadas a su repositorio original;
-las versiones de CrossNext se publican manualmente.
+las versiones se publican manualmente.
 Las compilaciones y pruebas del simulador no sustituyen las pruebas físicas de
 orientación, entrada, memoria y persistencia antes de publicar una versión.
 
@@ -157,7 +161,7 @@ estar incluidos en CrossNext.
 
 ## Apoya CrossNext
 
-Gracias por usar CrossNext y ayudar a mejorarlo. Si quieres, puedes apoyar
-su desarrollo continuo en Ko-fi.
+CrossNext lo desarrolla [manuelx900](https://github.com/manuelx900). Si quieres,
+puedes apoyar a su autor y el desarrollo continuo de CrossNext en Ko-fi.
 
 [![Apoyar en Ko-fi](site/assets/support-ko-fi.svg)](https://ko-fi.com/manuelx900)
