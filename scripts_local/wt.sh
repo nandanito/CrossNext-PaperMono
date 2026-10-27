@@ -38,8 +38,8 @@ die() {
   exit 1
 }
 
-# The base is origin/xteink, never the local branch. firmware-next's local
-# xteink carries a train's unpushed commits for the whole bump-to-push window,
+# The base is origin/main, never the local branch. firmware-next's local
+# main carries a train's unpushed commits for the whole bump-to-push window,
 # so branching from it silently adopts somebody else's release in progress. On
 # 2026-08-30 a tree cut that way gated another session's unpushed release notes
 # and reported that session's failure as its own discovery.
@@ -63,11 +63,11 @@ cmd_new() {
   git -C "$INTEGRATION" show-ref --verify --quiet "refs/heads/$branch" &&
     die "branch $branch already exists (drop the old worktree first, or pick another name)"
 
-  # Fetch before reading origin/xteink: a stale remote ref bases the tree on
+  # Fetch before reading origin/main: a stale remote ref bases the tree on
   # work that landed hours ago, which is the same bug one indirection further.
   if [ -z "$from" ]; then
     git -C "$INTEGRATION" fetch origin --quiet 2>/dev/null || true
-    from="origin/xteink"
+    from="origin/main"
   fi
 
   mkdir -p "$WT_ROOT"
@@ -116,12 +116,12 @@ cmd_list() {
     # ignore the column. sync.sh and check.sh do the same.
     dirty="$(git -C "$d" status --porcelain --ignore-submodules=untracked 2>/dev/null | grep -c '' || true)"
     [ "$dirty" -eq 0 ] && dirty="clean" || dirty="$dirty files"
-    # Against origin/xteink, not the local branch, for the reason in cmd_new:
+    # Against origin/main, not the local branch, for the reason in cmd_new:
     # during a train the local branch is ahead of what everyone else can see,
     # so every tree's count reads high and the column stops meaning anything.
-    ahead="$(git -C "$d" rev-list --count origin/xteink.."$branch" 2>/dev/null || echo 0)"
+    ahead="$(git -C "$d" rev-list --count origin/main.."$branch" 2>/dev/null || echo 0)"
     state=""
-    [ "$ahead" != "0" ] && state="$ahead commit(s) ahead of origin/xteink"
+    [ "$ahead" != "0" ] && state="$ahead commit(s) ahead of origin/main"
     # A simulator running out of this tree means somebody is using it.
     pgrep -f "^$d/.pio/build/simulator_x4_pro/program" >/dev/null 2>&1 &&
       state="${state:+$state, }sim running"
@@ -147,16 +147,16 @@ cmd_drop() {
   local dir="$WT_ROOT/$name" branch="app/$name"
   [ -d "$dir" ] || die "no worktree at $dir"
 
-  # Refuse to throw away work that is not in xteink yet. Removing a worktree
+  # Refuse to throw away work that is not in main yet. Removing a worktree
   # deletes its build output and its screenshots too, so a wrong call here is
   # not a small mistake.
   local unmerged dirty
   dirty="$(git -C "$dir" status --porcelain --ignore-submodules=untracked | grep -c '' | tr -d ' ')"
-  unmerged="$(git -C "$INTEGRATION" rev-list --count origin/xteink.."$branch" 2>/dev/null || echo 0)"
+  unmerged="$(git -C "$INTEGRATION" rev-list --count origin/main.."$branch" 2>/dev/null || echo 0)"
   if [ "$dirty" != "0" ] || [ "$unmerged" != "0" ]; then
     echo "refusing to drop $name:" >&2
     [ "$dirty" != "0" ] && echo "  $dirty uncommitted file(s)" >&2
-    [ "$unmerged" != "0" ] && echo "  $unmerged commit(s) not in xteink" >&2
+    [ "$unmerged" != "0" ] && echo "  $unmerged commit(s) not in main" >&2
     echo >&2
     echo "merge it first, or pass --force if you mean to lose it." >&2
     [ "${2:-}" != "--force" ] && exit 1
@@ -170,7 +170,7 @@ cmd_drop() {
 }
 
 # Closing is the part nobody does. A tree whose branch is entirely in
-# origin/xteink and whose working copy is clean holds nothing: no commits, no
+# origin/main and whose working copy is clean holds nothing: no commits, no
 # edits, and its build output and screenshots can be made again. Ninety-odd
 # such trees once sat under wt/ because dropping them was a decision per tree.
 # prune makes it one decision for all of them and never touches a tree that
@@ -186,7 +186,7 @@ cmd_prune() {
     branch="$(git -C "$d" branch --show-current 2>/dev/null)"
     [ -n "$branch" ] || { kept=$((kept + 1)); continue; }
     dirty="$(git -C "$d" status --porcelain --ignore-submodules=untracked 2>/dev/null | grep -c '' | tr -d ' ')"
-    unmerged="$(git -C "$INTEGRATION" rev-list --count origin/xteink.."$branch" 2>/dev/null || echo 1)"
+    unmerged="$(git -C "$INTEGRATION" rev-list --count origin/main.."$branch" 2>/dev/null || echo 1)"
     # A tree in ACTIVE USE can be clean and merged at the same time, and
     # dropping it destroys work that was never going to be committed.
     #

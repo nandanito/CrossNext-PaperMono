@@ -34,10 +34,10 @@ bad() { FAIL=$((FAIL+1)); echo "  FAIL $1"; }
 q()   { "$@" >/dev/null 2>&1; }
 cdd() { cd "$1" || { echo "FAIL cannot enter $1 -- refusing to run outside the fixture"; exit 1; }; }
 
-# A repo with an origin/xteink to diff against. Same sandbox discipline as
+# A repo with an origin/main to diff against. Same sandbox discipline as
 # host-tests/wtbase: an earlier suite of ours fell through a failed cd and drove
 # the real workspace, so the fixture is checked before anything is asserted.
-q git init --bare -b xteink "$WORK/origin.git"
+q git init --bare -b main "$WORK/origin.git"
 q git clone "$WORK/origin.git" "$WORK/repo"
 cdd "$WORK/repo"
 q git config user.email t@t; q git config user.name t
@@ -57,7 +57,7 @@ echo x > assets_local/base.svg; echo x > test/CMakeLists.txt
 echo x > playground-submission/logo.svg  # NOT .md: *.md matches first and the row would never be reached
 echo x > sim-stubs-marker; rm -f sim-stubs-marker; mkdir -p sim-stubs; echo x > sim-stubs/nvs.h
 q git add -A; q git commit -m base
-q git push -u origin xteink
+q git push -u origin main
 
 case "$PWD" in "$WORK"/*) ;; *) echo "FAIL fixture not in place (cwd $PWD)"; exit 1 ;; esac
 
@@ -79,8 +79,8 @@ needed() {
   fi
 }
 
-reset_tree() { q git checkout -q "$MAIN" 2>/dev/null; q git reset --hard origin/xteink; q git clean -fdq; }
-MAIN="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo xteink)"
+reset_tree() { q git checkout -q "$MAIN" 2>/dev/null; q git reset --hard origin/main; q git clean -fdq; }
+MAIN="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)"
 
 echo "device-build-needed"
 
