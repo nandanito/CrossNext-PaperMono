@@ -170,7 +170,7 @@ bool XtcReaderActivity::handleFormatInput() {
         int control = routed.value;
         if (swipeStep || control == readertext::SheetPrevious || control == readertext::SheetNext) {
           const int count = settingsTab == 2 ? xtc->getChapters().size() : moreRowCount();
-          const int capacity = readertext::sheetRowsPerPage(pageSettings->uiTarget.deviceContext(), true);
+          const int capacity = readertext::sheetRowsPerPage(pageSettings->uiTarget.deviceContext(), true, settingsTab);
           const int step = swipeStep ? swipeStep : (control == readertext::SheetNext ? 1 : -1);
           const int page = std::clamp(settingsPage + step, 0, std::max(0, (count - 1) / capacity));
           if (page == settingsPage) return true;
