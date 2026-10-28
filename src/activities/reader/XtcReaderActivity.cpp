@@ -59,7 +59,7 @@ void XtcReaderActivity::renderPageSettings() {
     std::snprintf(out, size, "%s",
                   self->settingsTab == 2 ? self->xtc->getChapters()[n].name.c_str()
                   : n == 0               ? tr(STR_REFRESH_FREQ)
-                  : n == 1               ? tr(STR_READER_FINISH_BOOK)
+                  : n == 1               ? I18N.get(self->completionMenuLabelId())
                                          : tr(STR_GO_HOME_BUTTON));
   };
   text.listCheck = [](const void* context, int n) {
