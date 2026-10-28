@@ -3400,7 +3400,7 @@ void EpubReaderActivity::applyReaderTextSettings() {
 void EpubReaderActivity::buildMoreActions() {
   using MA = EpubReaderMenuActivity::MenuAction;
   moreItems.clear();
-  moreItems.reserve(8);
+  moreItems.reserve(9);
   moreItems.push_back({MA::STYLE_SETTINGS, StrId::STR_STYLE});
   moreItems.push_back({MA::SEARCH, StrId::STR_READER_SEARCH});
   moreItems.push_back({MA::TOGGLE_BOOKMARK,
@@ -3410,6 +3410,9 @@ void EpubReaderActivity::buildMoreActions() {
   moreItems.push_back({MA::BOOK_STATS, StrId::STR_READER_BOOK_STATS});
   moreItems.push_back({MA::FINISH_BOOK, StrId::STR_READER_FINISH_BOOK});
   if (KOREADER_STORE.hasCredentials()) moreItems.push_back({MA::SYNC, StrId::STR_SYNC_PROGRESS});
+  // Without a Home key nothing else leaves the page: the bottom edge opens this
+  // sheet and a left-edge swipe pages back (Paper Mono has no Confirm key either).
+  if (!gpio.hasHomeKey()) moreItems.push_back({MA::GO_HOME, StrId::STR_GO_HOME_BUTTON});
 }
 
 std::string EpubReaderActivity::moreRowName(int row) const {
