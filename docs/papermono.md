@@ -1,8 +1,8 @@
 # M5Stack PaperMono and PaperMono-Lite
 
-Both models use the `papermono` firmware. Lite removes NFC and LoRa; neither
-peripheral is used by CrossPlay. This port uses the PaperMono support already
-present in the pinned FreeInk SDK, without adding another display or input driver.
+Both models use the `papermono` firmware. Lite removes NFC and LoRa; this
+firmware uses neither. The port relies on the PaperMono support in the vendored
+FreeInk SDK, without adding another display or input driver.
 
 ## Hardware
 
@@ -22,48 +22,88 @@ and the SDK's `BoardConfig::PAPER_MONO` describe:
 
 The SDK transforms touch coordinates into its landscape framebuffer and handles
 panel rotation. The hardware's touch range excludes approximately five pixels
-at each portrait edge. CrossPlay uses the board's existing viewable insets.
+at each portrait edge. The firmware uses the board's existing viewable insets.
+
+## Controls
+
+The PaperMono has no Home, Back or Confirm key, so navigation is by gesture:
+Back is a right swipe from the left edge, Home an up swipe from the bottom edge,
+and a down swipe from the top edge opens the frontlight panel.
+
+The reading surface claims two of those edges. A left-edge swipe pages back
+(`ReaderUtils::handleBackNavigation` ignores the Back gesture there), and the
+bottom-edge swipe opens the Contents, Font, Layout and More sheet before the
+global Home gesture is checked. The full reader menu, which has Go Home, only
+opens with a Confirm key. So on boards without a Home key, **Go Home** is added
+to the EPUB sheet's More panel and to the XTC sheet's More tab.
+
+## microSD card
+
+The card must be FAT32 or exFAT on an **MBR** partition table. SdFat reads only
+MBR partitions, so a card erased with a GUID (GPT) scheme, which macOS Disk
+Utility can pick, fails to mount and boot stops at "SD card error". Copy the
+folders from `CrossNext-Resources.zip` to the card root.
 
 ## Build and install
 
-From an isolated worktree:
+`papermono` is the development image and `gh_release_papermono` the release
+image. Both have PSRAM, USB mass storage, the SDMMC block-device interface and a
+16 KB render-task stack. Only the development image contains the USB input/debug
+bridge. Boot does not wait for a serial monitor. The inherited CI workflows only
+run in CrossPlay's repository, so build and check locally:
 
 ```bash
-./scripts_local/check.sh
+pio run -e gh_release_papermono
+python3 scripts_local/stack_budget.py --build-dir .pio/build/gh_release_papermono
 ```
 
-This includes `papermono` alongside X4 Pro, Sticky and the simulator. The release
-configuration is `gh_release_papermono`; CI builds it and checks the render-task
-stack. Both configurations have PSRAM, USB mass storage, the SDMMC block-device
-interface and CrossPlay's 16 KB render-task stack. Only the development image
-contains the USB input/debug bridge. Boot does not wait for a serial monitor.
+The stack check needs the build to have been made with
+`PLATFORMIO_BUILD_FLAGS="-fstack-usage -fcallgraph-info=su"`.
 
-Release assets:
+A build leaves two images in `.pio/build/<env>/`:
 
 | File | Use |
 | --- | --- |
-| `crossplay-<version>-papermono-full.bin` | First install over USB at offset `0x0` |
-| `firmware-papermono.bin` | Wi-Fi or SD firmware update |
-| `crossplay-<version>-papermono.elf` | Symbolizing a crash from that release |
+| `firmware.factory.bin` | Full image for a first install over USB at offset `0x0` |
+| `firmware.bin` | Application only, at `0x10000`; published as `firmware-papermono.bin` for online updates |
 
-See [installation](install.md) for the USB commands. Hold the power button for
-about two seconds until the red LED flashes to enter download mode, then release
-it. If it does not restart after flashing, double-click the power button to turn
-it off, then press it once to start.
+The first install must be a full USB flash: it writes the partition table, whose
+two 7.94 MB app slots this image needs. CrossPoint's 6.25 MB slots are too small,
+so an update from CrossPoint over SD or Wi-Fi will not fit.
+
+Hold the power button for about two seconds until the red LED flashes to enter
+download mode, then release it. Back up the device first:
+
+```bash
+~/.platformio/penv/bin/esptool --chip esp32s3 read-flash 0 0x1000000 papermono-backup.bin
+pio run -e papermono -t upload
+```
+
+PlatformIO's `upload` writes the bootloader (`0x0`), partition table (`0x8000`)
+and `boot_app0` (`0xe000`) along with the app, the same images merged into
+`firmware.factory.bin`. Restore with
+`esptool --chip esp32s3 write-flash 0 papermono-backup.bin` in
+download mode. If the device does not restart after flashing, double-click the
+power button to turn it off, then press it once to start.
 
 The firmware carries the `papermono` board tag. Both on-device updaters reject
-images tagged for X4 Pro or Sticky. Its release version comes from CrossPlay's
-version field, so installing an update advances the version the updater compares.
+images tagged for X4 Pro or Sticky. PaperMono builds check this repository's
+latest GitHub release for `firmware-papermono.bin`. The version comes from
+`crossplay.version` in `platformio.ini`, so a release tag must be higher than the
+installed version for the updater to offer it.
 
 To bring the frontlight back on after a restart or sleep, enable **Settings →
 Display → Restore Light on Wake**. Brightness is retained even when this option
 is off; the option controls whether the light turns on. Existing SD settings
-are preserved when installing CrossPlay.
+are preserved when installing this firmware.
 
 ## Hardware verification
 
-Use a FAT32 or exFAT SD card with a book and saved game data. Before flashing,
+Use a FAT32 or exFAT card (MBR) with a book and saved game data. Before flashing,
 back up the existing firmware and retain the card's contents.
+
+Checked on a PaperMono so far (2026-10-28): the USB install, the card mount,
+opening a book, turning pages and leaving a book through **More → Go Home**.
 
 1. Boot without a serial monitor; check the Home screen, card mount and available PSRAM.
 2. Open Games and Apps, launch a game, return with the back gesture, then open a book.
