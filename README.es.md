@@ -78,8 +78,9 @@ microSD o en línea no cabe.
    ```bash
    pio run -e papermono -t upload
    ```
-   Si no se reinicia, pulsa dos veces el botón de encendido para apagarlo y una
-   vez para encenderlo.
+   Graba el cargador de arranque y la tabla de particiones además de la app. Si no
+   se reinicia, pulsa dos veces el botón de encendido para apagarlo y una vez para
+   encenderlo.
 
 Para volver al firmware anterior, graba la copia en modo de descarga:
 `~/.platformio/penv/bin/esptool --chip esp32s3 write-flash 0 papermono-backup.bin`.

@@ -78,8 +78,8 @@ firmware needs. An SD-card or online update from CrossPoint will not fit.
    ```bash
    pio run -e papermono -t upload
    ```
-   If it does not restart, double-click the power button to turn it off, then
-   press it once.
+   This writes the bootloader and partition table as well as the app. If it does
+   not restart, double-click the power button to turn it off, then press it once.
 
 To go back to the previous firmware, write the backup in download mode:
 `~/.platformio/penv/bin/esptool --chip esp32s3 write-flash 0 papermono-backup.bin`.

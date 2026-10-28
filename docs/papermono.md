@@ -79,7 +79,10 @@ download mode, then release it. Back up the device first:
 pio run -e papermono -t upload
 ```
 
-Restore with `esptool --chip esp32s3 write-flash 0 papermono-backup.bin` in
+PlatformIO's `upload` writes the bootloader (`0x0`), partition table (`0x8000`)
+and `boot_app0` (`0xe000`) along with the app, the same images merged into
+`firmware.factory.bin`. Restore with
+`esptool --chip esp32s3 write-flash 0 papermono-backup.bin` in
 download mode. If the device does not restart after flashing, double-click the
 power button to turn it off, then press it once to start.
 
