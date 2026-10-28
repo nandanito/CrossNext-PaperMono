@@ -59,7 +59,7 @@ void XtcReaderActivity::renderPageSettings() {
     std::snprintf(out, size, "%s",
                   self->settingsTab == 2 ? self->xtc->getChapters()[n].name.c_str()
                   : n == 0               ? tr(STR_REFRESH_FREQ)
-                  : n == 1               ? tr(STR_READER_FINISH_BOOK)
+                  : n == 1               ? I18N.get(self->completionMenuLabelId())
                                          : tr(STR_GO_HOME_BUTTON));
   };
   text.listCheck = [](const void* context, int n) {
@@ -170,7 +170,7 @@ bool XtcReaderActivity::handleFormatInput() {
         int control = routed.value;
         if (swipeStep || control == readertext::SheetPrevious || control == readertext::SheetNext) {
           const int count = settingsTab == 2 ? xtc->getChapters().size() : moreRowCount();
-          const int capacity = readertext::sheetRowsPerPage(pageSettings->uiTarget.deviceContext(), true);
+          const int capacity = readertext::sheetRowsPerPage(pageSettings->uiTarget.deviceContext(), true, settingsTab);
           const int step = swipeStep ? swipeStep : (control == readertext::SheetNext ? 1 : -1);
           const int page = std::clamp(settingsPage + step, 0, std::max(0, (count - 1) / capacity));
           if (page == settingsPage) return true;
