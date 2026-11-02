@@ -8,6 +8,7 @@
 #include "../ui/DPad.h"
 #include "../ui/GameGuide.h"
 #include "../ui/GamePanel.h"
+#include "../ui/MatchResult.h"
 namespace game2048ui {
 namespace fui = freeink::ui;
 namespace {
@@ -29,10 +30,10 @@ void board(toybox::Screen& s, fui::Rect r, const game2048::State& state) {
     const int h = std::max(12, cell * 44 / 100);
     dashboard::digits(s, fui::makeRect(tile.x + 5, tile.y + (tile.height - h) / 2, tile.width - 10, h), value, dark);
   }
-  dashboard::frame(s, r, 4);
+  dashboard::frame(s, r, pixelui::kBorder);
 }
 void score(toybox::Screen& s, fui::Rect r, const char* label, uint64_t value) {
-  dashboard::frame(s, r, 3);
+  dashboard::frame(s, r, pixelui::kBorder);
   dashboard::text(s, fui::makeRect(r.x + 5, r.y + 4, r.width - 10, 24), label, 0);
   char number[24];
   std::snprintf(number, sizeof(number), "%llu", static_cast<unsigned long long>(value));
@@ -56,6 +57,21 @@ void build(toybox::Screen& s, const Model& m, Work&) {
   const auto body = s.body();
   const auto& state = *m.state;
   const bool wide = body.width > body.height;
+  if (m.view == View::Result) {
+    char value[48];
+    std::snprintf(value, sizeof(value), "%s: %llu", tr(STR_2048_SCORE), static_cast<unsigned long long>(state.score));
+    const bool won = m.result == game2048::Result::Won;
+    matchresult::draw(s, body, won ? tr(STR_UI_YOU_WIN_3DB6AC) : tr(STR_UI_GAME_OVER_B1DE5C), value, tr(STR_GAME_2048),
+                      m.saveFailed ? tr(STR_2048_SAVE_FAILED)
+                      : won        ? tr(STR_2048_WON)
+                                   : tr(STR_2048_OVER),
+                      {}, ConfirmNew, Review, CancelNew, matchresult::BadgePosition::AfterArt);
+    const auto hero = wide ? fui::makeRect(body.x, body.y, body.width / 2 - 12, body.height) : body;
+    const int bottom = wide ? hero.bottom() - 8 : body.bottom() - 316;
+    const int edge = std::max(4, std::min(int(hero.width) - 32, bottom - hero.y - 128)) / 4 * 4;
+    board(s, fui::makeRect(hero.x + (hero.width - edge) / 2, hero.y + 128, edge, edge), state);
+    return;
+  }
   if (m.view == View::Help) {
     dashboard::text(s, s.takeTop(wide ? 34 : 48, 8), tr(STR_2048_HELP), pixelui::kBody, fui::TextAlign::Left);
     dashboard::button(s, s.takeBottom(wide ? 48 : 54, 8), tr(STR_UI_GOT_IT_C3A894), CancelNew, 0, true, &extra_check_32,
@@ -71,7 +87,7 @@ void build(toybox::Screen& s, const Model& m, Work&) {
                                      StrId::STR_GUIDE_2048_GOAL_BODY};
     for (int n = 0; n < 3; ++n) {
       const auto card = fui::makeRect(area.x + (wide ? n * (w + gap) : 0), area.y + (wide ? 0 : n * (h + gap)), w, h);
-      dashboard::frame(s, card, 3);
+      dashboard::frame(s, card, pixelui::kBorder);
       guideui::badge(s, fui::makeRect(card.x + 10, card.y + 10, 34, 34), n + 1);
       dashboard::text(s, fui::makeRect(card.x + 54, card.y + 8, card.width - 62, 38), I18N.get(titles[n]), 0,
                       fui::TextAlign::Left);
@@ -111,7 +127,7 @@ void build(toybox::Screen& s, const Model& m, Work&) {
                             : fui::makeRect(body.x, body.y + 214, body.width, body.height - 214);
     const int buttons = wide ? 50 : 64;
     const auto card = fui::makeRect(right.x, right.y, right.width, right.height - 2 * buttons - 32);
-    dashboard::frame(s, card, 4);
+    dashboard::frame(s, card, pixelui::kBorder);
     dashboard::text(s, fui::makeRect(card.x + 10, card.y + 20, card.width - 20, 42), tr(STR_GUIDE_START_AGAIN),
                     pixelui::kBody);
     guideui::text(s, fui::makeRect(card.x + 24, card.y + 76, card.width - 48, card.height - 140),
@@ -127,13 +143,13 @@ void build(toybox::Screen& s, const Model& m, Work&) {
   if (m.view == View::Menu) {
     const auto left = wide ? fui::makeRect(body.x, body.y, body.width / 2 - 10, body.height) : body;
     const auto banner = fui::makeRect(left.x, left.y, left.width, 58);
-    dashboard::frame(s, banner, 4);
+    dashboard::frame(s, banner, pixelui::kBorder);
     gamepanel::mark(s, fui::makeRect(banner.x + 14, banner.y + 12, 34, 34), gamepanel::Mark::Pause);
     s.target().fill(fui::makeRect(banner.x + 64, banner.y + 9, 2, banner.height - 18), dashboard::ink);
     dashboard::text(s, fui::makeRect(banner.x + 78, banner.y, banner.width - 86, banner.height),
                     game2048::canMove(state) ? tr(STR_REDESIGN_PAUSED) : tr(STR_2048_OVER), 0);
     const auto scores = fui::makeRect(left.x, left.y + 66, left.width, 48);
-    dashboard::frame(s, scores, 3);
+    dashboard::frame(s, scores, pixelui::kBorder);
     s.target().fill(fui::makeRect(scores.x + scores.width / 2, scores.y, 2, scores.height), dashboard::ink);
     char value[24];
     for (int n = 0; n < 2; ++n) {
@@ -178,7 +194,10 @@ void build(toybox::Screen& s, const Model& m, Work&) {
       : game2048::highest(state) >= 11 ? tr(STR_2048_WON)
                                        : tr(STR_REDESIGN_SWIPE),
       3);
-  dpad::build(s, controls, Move);
+  if (m.view == View::Review)
+    gamepanel::row(s, controls, tr(STR_UI_BACK_TO_MENU_398BBB), CancelNew, 0, gamepanel::Mark::Back);
+  else
+    dpad::build(s, controls, Move);
   if (m.saveFailed)
     dashboard::text(s, fui::makeRect(body.x, body.bottom() - 28, body.width, 28), tr(STR_2048_SAVE_FAILED), 3);
 }

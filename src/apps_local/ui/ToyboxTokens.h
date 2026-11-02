@@ -16,6 +16,7 @@
 
 #include <cstdint>
 
+#include "LightUi.h"
 #include "ToyboxMetrics.h"
 
 namespace toybox {
@@ -66,7 +67,7 @@ inline fui::StyleSet bandOutlineStyles() {
   styles.normal.background = fui::Paint::solid(fui::Color::Black);
   styles.normal.foreground = fui::Paint::solid(fui::Color::White);
   styles.normal.border = fui::Paint::solid(fui::Color::White);
-  styles.normal.borderWidth = kHairline;
+  styles.normal.borderWidth = kFrame;
   styles.selected = styles.normal;
   styles.focused = styles.normal;
   styles.active = styles.normal;
@@ -76,7 +77,8 @@ inline fui::StyleSet bandOutlineStyles() {
 
 // A settings row: hairline outline at rest, inverted when selected. Same two
 // states menuRow() drew by hand.
-inline fui::StyleSet rowStyles() {
+inline fui::StyleSet rowStyles(bool light = chrome::lightHeader) {
+  if (light) return lightui::controlStyles(true);
   fui::StyleSet styles;
   styles.explicitlySet = true;
   styles.normal.background = fui::Paint::solid(fui::Color::White);
@@ -95,10 +97,18 @@ inline fui::StyleSet rowStyles() {
   return styles;
 }
 
+inline fui::StyleSet buttonStyles(bool light = chrome::lightHeader) {
+  if (light) return lightui::controlStyles();
+  auto styles = rowStyles(false);
+  styles.normal.borderWidth = kFrame;
+  styles.disabled.borderWidth = kFrame;
+  return styles;
+}
+
 // Why a big label drifts low in a small box, and the one fix for it.
 //
 // `GfxRendererTarget::text` centres the font's LINE BOX (advanceY), not the
-// ink, and it clamps: `rect.y + max(0, (rect.height - lineHeight) / 2)`. Jersey
+// ink, and it clamps: `rect.y + max(0, (rect.height - lineHeight) / 2)`. the UI face
 // carries a lot of leading -- the display cut is a 63px line box around a 38px
 // digit -- so the moment a box is shorter than the line box, that max() pins
 // the offset at zero and the label stops being centred at all. It lands
@@ -124,12 +134,12 @@ struct CutMetrics {
 // ui/fonts/. ToyboxFonts.cpp checks these against the real font data at startup
 // and logs an error if a regenerated cut ever moves, so they cannot rot in
 // silence -- which matters because nothing else here can see a font.
-constexpr CutMetrics kTileCut{21, 17, 13};     // toybox_10
-constexpr CutMetrics kButtonCut{29, 24, 18};   // toybox_14
-constexpr CutMetrics kUiCut{42, 34, 25};       // toybox_20
-constexpr CutMetrics kDisplayCut{63, 51, 38};  // toybox_30
-constexpr CutMetrics kLargeCut{92, 74, 57};    // toybox_44
-constexpr CutMetrics kHugeCut{133, 108, 82};   // toybox_64
+constexpr CutMetrics kTileCut{28, 23, 16};     // ui_prose_10
+constexpr CutMetrics kButtonCut{28, 23, 16};   // ui_prose_10
+constexpr CutMetrics kUiCut{40, 32, 21};       // ui_prose_14
+constexpr CutMetrics kDisplayCut{40, 32, 21};  // ui_prose_14
+constexpr CutMetrics kLargeCut{114, 90, 60};   // display_sans_40
+constexpr CutMetrics kHugeCut{159, 125, 84};   // display_sans_56
 
 // Connections speaks Instrument Serif, so its three cuts need the same
 // treatment: the serif line boxes are proportionally taller still, and a 26px
@@ -154,6 +164,14 @@ constexpr CutMetrics kReadingBoldCut{45, 36, 23};       // reading_serif_bold_16
 constexpr fui::Rect inkCentred(const fui::Rect& box, const CutMetrics& cut) {
   return fui::Rect{box.x, static_cast<int16_t>(box.y + (box.height + cut.inkHeight) / 2 - cut.ascender), box.width,
                    cut.lineHeight};
+}
+
+inline fui::Rect inkCentred(const fui::DrawTarget& target, fui::Rect box, fui::TextStyle style) {
+  const auto ink = target.inkBounds(style.font, "H", style);
+  if (ink.height <= 0) return box;
+  box.y = static_cast<int16_t>(box.y + (box.height - ink.height) / 2 - ink.y);
+  box.height = target.lineHeight(style.font);
+  return box;
 }
 
 // The cut a line height belongs to, or nullptr for one this fork does not ship.
@@ -188,7 +206,7 @@ constexpr fui::FontId kDisplayFont = fui::FONT_SLOT_TITLE;
 constexpr fui::FontId kTileFont = fui::FONT_SLOT_SMALL;
 
 // A button label, for an app whose body slot carries something other than
-// Jersey. A button is the device speaking rather than the app, so it takes the
+// the UI face. A button is the device speaking rather than the app, so it takes the
 // small slot -- which readingChromeFaces() binds to the UI cut for exactly this.
 //
 // The alignment is named because it has to be: FONT_SLOT_SMALL is 0, and
@@ -234,7 +252,7 @@ inline fui::StyleSet disabledStepperStyles() {
   styles.normal.background = fui::Paint::dither(fui::Color::LightGray);
   styles.normal.foreground = fui::Paint::solid(fui::Color::Black);
   styles.normal.border = fui::Paint::dither(fui::Color::DarkGray);
-  styles.normal.borderWidth = kHairline;
+  styles.normal.borderWidth = kFrame;
   styles.selected = styles.normal;
   styles.focused = styles.normal;
   styles.active = styles.normal;
@@ -295,6 +313,7 @@ inline const fui::ThemeTokens& themeTokens() {
     tokens.headerTitleAlign = fui::TextAlign::Left;
 
     tokens.titleText.font = fui::FONT_SLOT_BODY;
+    tokens.titleText.bold = true;
     // The display cut is only ever set on the header band, and that band is
     // always solid black, so the title colour belongs to the token rather than to
     // each caller. `header()` uses the title style as given instead of resolving
@@ -306,8 +325,8 @@ inline const fui::ThemeTokens& themeTokens() {
     // list values would shrink to 13px if this followed it.
     tokens.smallText.font = kUiFont;
 
-    tokens.listRow = rowStyles();
-    tokens.button = rowStyles();
+    tokens.listRow = rowStyles(false);
+    tokens.button = buttonStyles(false);
     // Screen::header() takes the band's StyleSet from the popup slot, which is
     // the SDK's convention for "chrome surface" rather than an oversight.
     tokens.popup = invertedStyles();

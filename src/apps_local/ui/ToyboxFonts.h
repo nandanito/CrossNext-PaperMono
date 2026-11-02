@@ -1,12 +1,15 @@
 #pragma once
 
-// Toybox's own typefaces, registered from our own code so the design language
-// costs zero upstream surface. See ToyboxFonts.cpp for why the bit depth
-// matters more than the choice of face.
+// Shared interface aliases follow the active section's selected style.
+// Dedicated content faces keep their own metrics and registration.
 
 #include <GfxRenderer.h>
 
+#include "../../util/MenuFontStyle.h"
+
 namespace toybox {
+menufont::Style interfaceFontStyle();
+void syncInterfaceFonts(GfxRenderer& renderer);
 
 // Arbitrary ids that cannot collide with fontIds.h, which are FNV-ish hashes of
 // the generated font names.
@@ -75,6 +78,7 @@ constexpr int kProseFontId = 0x70B0'000E;
 constexpr int kLibraryFontId = 0x70B0'000F;
 constexpr int kBookListFontId = 0x70B0'0010;
 constexpr int kCarouselTitleFontId = 0x70B0'0011;
+constexpr int kClockLabelFontId = 0x70B0'0012;
 
 // Call from an activity's onEnter() before drawing. Idempotent and cheap.
 void ensureFonts(GfxRenderer& renderer);

@@ -10,10 +10,13 @@
 #include "ReadingStatsProjection.h"
 #include "ReadingStatsScreens.h"
 #include "ReadingStatsStore.h"
+#include "components/OptionPopup.h"
 
 class ReadingStatsActivity final : public Activity {
  public:
-  ReadingStatsActivity(GfxRenderer& renderer, MappedInputManager& input) : Activity("ReadingStats", renderer, input) {}
+  ReadingStatsActivity(GfxRenderer& renderer, MappedInputManager& input) : Activity("ReadingStats", renderer, input) {
+    setInterfaceFontSection(menufont::Section::Statistics);
+  }
   void openBook(const char* document, const char* title, const char* author) {
     std::snprintf(initialBook, sizeof(initialBook), "%s", document);
     std::snprintf(detail.title, sizeof(detail.title), "%s", title);
@@ -25,6 +28,9 @@ class ReadingStatsActivity final : public Activity {
   void render(RenderLock&&) override;
 
  private:
+  OptionPopup goalPopup;
+  bool goalCalendarVisible = false;
+  int goalMonth = 0;
   enum class Load { Anchor, Summary, Day, Period, Streak, Books, Detail, Cloud, Ready, Failed };
   void scan();
   bool beginScan(bool reverse = false);

@@ -260,6 +260,17 @@ void GfxRenderer::insertFont(const int fontId, EpdFontFamily font) {
   }
 }
 
+bool GfxRenderer::replaceBuiltinFont(const int fontId, EpdFontFamily font) {
+  const auto entry = fontMap.find(fontId);
+  if (entry == fontMap.end() || sdCardFonts_.find(fontId) != sdCardFonts_.end() ||
+      ttfFonts_.find(fontId) != ttfFonts_.end()) {
+    LOG_ERR("GFX", "Cannot replace unregistered or SD font %d", fontId);
+    return false;
+  }
+  entry->second = font;
+  return true;
+}
+
 int GfxRenderer::resolveTextFontId(const int fontId, const char* text, const EpdFontFamily::Style style) const {
   return fontfallback::resolve(fontMap, fallbackFontMap_, fontId, text, style);
 }
@@ -1881,7 +1892,7 @@ void GfxRenderer::displayBuffer(HalDisplay::RefreshMode refreshMode) const {
   refreshMode = applyPromotedRefresh(refreshMode);
   {
     PanelSpan span;
-    const int header = display.isInverted() ? chrome::headerHeight : 0;
+    const int header = chrome::invertHeaderForOutput(display.isInverted()) ? chrome::headerHeight : 0;
     invertHeaderBand(header);
     display.displayBuffer(refreshMode, fadingFix);
     invertHeaderBand(header);
@@ -1899,7 +1910,7 @@ void GfxRenderer::displayBufferAsync(HalDisplay::RefreshMode refreshMode) const 
   if (fadingFix) {
     {
       PanelSpan span;
-      const int header = display.isInverted() ? chrome::headerHeight : 0;
+      const int header = chrome::invertHeaderForOutput(display.isInverted()) ? chrome::headerHeight : 0;
       invertHeaderBand(header);
       display.displayBuffer(refreshMode, fadingFix);
       invertHeaderBand(header);
@@ -1909,7 +1920,7 @@ void GfxRenderer::displayBufferAsync(HalDisplay::RefreshMode refreshMode) const 
   }
   {
     PanelSpan span;
-    deferredHeaderHeight = display.isInverted() ? chrome::headerHeight : 0;
+    deferredHeaderHeight = chrome::invertHeaderForOutput(display.isInverted()) ? chrome::headerHeight : 0;
     invertHeaderBand(deferredHeaderHeight);
     display.displayBufferAsync(refreshMode);
   }

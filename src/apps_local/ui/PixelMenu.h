@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "LightUi.h"
 #include "PixelText.h"
 
 namespace toybox {
@@ -14,7 +15,7 @@ namespace pixelui {
 namespace fui = freeink::ui;
 constexpr int kMargin = 10;
 constexpr int kRowHeight = 66;
-constexpr int kBorder = 4;
+constexpr int kBorder = 2;
 constexpr int kPageHeight = 44;
 constexpr int kPageReserve = kPageHeight + 16;
 constexpr fui::FontId kSmall = 0, kBody = 1, kTitle = 2;
@@ -44,8 +45,9 @@ struct Header {
 void header(toybox::Screen& screen, Header model);
 void header(fui::DrawTarget& target, const fui::DeviceContext& device, const Header& model);
 void text(fui::DrawTarget& target, fui::Rect box, const char* label, fui::FontId font = kBody,
-          fui::Color color = fui::Color::Black, fui::TextAlign align = fui::TextAlign::Left);
+          fui::Color color = fui::Color::Black, fui::TextAlign align = fui::TextAlign::Left, bool emphasis = false);
 fui::StyleSet rowStyles();
+fui::StyleSet buttonStyles();
 void styleList(fui::ListProps& props, bool dense = false);
 fui::Rect rowArea(fui::Rect band, const fui::ListProps& props);
 void fitLabel(const fui::DrawTarget& target, char* text, int width, fui::TextStyle& style);
@@ -87,13 +89,17 @@ void tabs(Screen& screen, const fui::TabItem* items, int count, fui::ActionId ac
   props.text.font = font;
   props.text.maxLines = 2;
   props.text.align = fui::TextAlign::Center;
-  props.tabStyles = rowStyles();
+  props.tabStyles = chrome::lightHeader ? lightui::tabStyles() : rowStyles();
   props.tabInset = {};
   props.contentInset = {};
   props.minTouchSize = 0;
   const auto band = screen.takeTop(height, gap);
-  fui::tabBar(screen.frame(), band, props);
-  screen.target().stroke(band, fui::Paint::solid(fui::Color::Black), kBorder);
+  if (chrome::lightHeader)
+    lightui::tabs(screen.frame(), band, props);
+  else {
+    fui::tabBar(screen.frame(), band, props);
+    screen.target().stroke(band, fui::Paint::solid(fui::Color::Black), kBorder);
+  }
 }
 
 // The same SDK row measurement as list(), including wrapped names and values.
@@ -106,6 +112,7 @@ void list(Screen& screen, fui::ListProps& props, bool fillFrame = false, bool fr
   const auto band = screen.body();
   const auto rows = rowArea(band, props);
   fui::list(screen.frame(), band, props);
+  if (chrome::lightHeader) return;
   int height = 0;
   int frameTop = -1;
   const auto finishFrame = [&]() {

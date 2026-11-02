@@ -9,6 +9,8 @@
 #include "apps_local/power/PowerWakePolicy.h"
 #include "apps_local/ui/QuickAction.h"
 #include "util/HomeButtonInput.h"
+#include "util/MenuFontStyle.h"
+#include "util/SideButtonActions.h"
 
 class CrossPointSettings : public PersistableStore<CrossPointSettings> {
  private:
@@ -29,6 +31,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
     TRANSPARENT_CUSTOM = 7,
     // CrossPlay: the note chosen in Notes, drawn live (apps_local/notes/NotesSleep.h).
     NOTE = 8,
+    READING_GOAL = 9,
     SLEEP_SCREEN_MODE_COUNT
   };
   enum SLEEP_SCREEN_COVER_MODE { FIT = 0, CROP = 1, SLEEP_SCREEN_COVER_MODE_COUNT };
@@ -289,6 +292,10 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // EPUB reading orientation settings
   // 0 = portrait (default), 1 = landscape clockwise, 2 = inverted, 3 = landscape counter-clockwise
   uint8_t orientation = PORTRAIT;
+  uint8_t readerFourOrientations = 0;
+  uint8_t homeRecentBookCount = 3;
+  uint8_t sideLeftAction = static_cast<uint8_t>(SideButtonAction::Navigation);
+  uint8_t sideRightAction = static_cast<uint8_t>(SideButtonAction::Navigation);
   // Button layouts (front layout retained for migration only)
   uint8_t frontButtonLayout = BACK_CONFIRM_LEFT_RIGHT;
   uint8_t sideButtonLayout = PREV_NEXT;
@@ -338,10 +345,21 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // UI Theme
   uint8_t uiTheme = LYRA;
   uint8_t libraryView = 0;
+  uint8_t libraryLayout = 0;
+  uint8_t libraryClassicGrid = 1, libraryClassicExpanded = 0;
+  uint8_t librarySortMethod = 0, librarySortDirections = 1;
+  uint8_t libraryExpandedList = 1;
+  uint8_t libraryDisplay = 7;     // Finished books, series and genre.
+  uint8_t libraryFileTypes = 15;  // EPUB, XTC/XTCH, TXT and Markdown.
   uint8_t weekStartsSunday = 0;
   uint8_t readingFormats = 7;
-  enum HOME_LAYOUT { HOME_FRAMED = 0, HOME_CAROUSEL, HOME_LAYOUT_COUNT };
+  enum HOME_LAYOUT { HOME_FRAMED = 0, HOME_CAROUSEL, HOME_BOOX, HOME_LICORICE, HOME_LAYOUT_COUNT };
   uint8_t homeLayout = HOME_FRAMED;
+  uint8_t interfaceThemeStyle = 0;
+  uint8_t interfaceThemeOverrides[menufont::kSectionCount]{};
+  uint8_t menuFontStyle = uint8_t(menufont::kDefault);
+  uint8_t menuFontOverrides[menufont::kSectionCount]{};
+  uint8_t menuFontItemOverrides[menufont::kItemCount]{};
   // Sunlight fading compensation
   uint8_t fadingFix = 0;
   // Power button return from footnotes (1 = enabled, 0 = disabled)
@@ -395,12 +413,16 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   char homeButtonShortcutTitle[40] = "READING QUEST";
   char homeButtonDoubleShortcutTitle[40] = "READING QUEST";
   char homeButtonLongShortcutTitle[40] = "READING QUEST";
+  char sideLeftShortcutTitle[40] = "READING QUEST";
+  char sideRightShortcutTitle[40] = "READING QUEST";
   uint8_t rotationDirection = 0;  // 0 left, 1 right
   // Which gestures turn the page in each direction (PAGE_TURN_GESTURE).
   uint8_t pageTurnGesture = SWIPE_ONLY;
   uint8_t previousPageGesture = SWIPE_ONLY;
   // Swap both horizontal page swipes and tap zones for fixed-layout manga.
   uint8_t xtcInvertPageDirection = 0;
+  uint8_t xtcCoverRotation = 0;
+  uint8_t readingDailyGoal = 0;
   uint8_t flashcardQuestionSize = 0;
   uint8_t flashcardAnswerSize = 0;
   uint8_t flashcardSmartSize = 1;
