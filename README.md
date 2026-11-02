@@ -127,7 +127,11 @@ egg, name your pet and watch it grow as you read.
 
 PET needs `CrossNext-Resources.zip` on the microSD.
 See [PET's guide](docs/apps/pet.md) and
-[what's new in v1.2.0](docs/releases/CrossNext-v1.2.0.md).
+[what's new in v1.4.0](docs/releases/CrossNext-v1.4.0.md).
+
+The interface starts with Noto Sans. Choose Noto Sans, Ubuntu or Noto Serif
+globally, by section, or for an individual app or game. Reading fonts are
+configured separately. Saved Jersey 25 choices migrate to Noto Sans.
 
 ## Read, study and play
 
@@ -228,7 +232,7 @@ CrossPlay supplies the app/game shelf and implementations; CrossPoint supplies
 the e-reader foundation. [CrossNext changes](docs/crossnext-changes.md) describes
 CrossNext's adaptations without claiming those inherited projects as new work.
 
-[What’s new in v1.2.0](docs/releases/CrossNext-v1.2.0.md)
+[What’s new in v1.4.0](docs/releases/CrossNext-v1.4.0.md)
 
 ## Support CrossNext
 

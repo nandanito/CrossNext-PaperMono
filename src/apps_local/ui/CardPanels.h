@@ -67,9 +67,14 @@ inline void setting(toybox::Screen& s, fui::Rect r, const char* label, const cha
   const int split = r.x + r.width * (count == 3 ? 45 : 59) / 100;
   dashboard::text(s, fui::makeRect(r.x + 14, r.y, split - r.x - 24, r.height), label, 1, fui::TextAlign::Left);
   const int gap = 8, width = (r.right() - split - 12 - gap * (count - 1)) / count;
-  for (int n = 0; n < count; ++n)
-    choice(s, fui::makeRect(split + n * (width + gap), r.y + 8, width, r.height - 16), values[n], action, first + n,
-           n == selected);
+  for (int n = 0; n < count; ++n) {
+    if (chrome::lightHeader)
+      dashboard::segment(s, fui::makeRect(split, r.y + 8, r.right() - split - 12, r.height - 16), n, count, values[n],
+                         action, first + n, n == selected, 1);
+    else
+      choice(s, fui::makeRect(split + n * (width + gap), r.y + 8, width, r.height - 16), values[n], action, first + n,
+             n == selected);
+  }
 }
 inline void stats(toybox::Screen& s, fui::Rect r, const char* const* labels, const int* values) {
   dashboard::frame(s, r);
@@ -143,7 +148,9 @@ inline void deckLesson(toybox::Screen& s, fui::Rect r, bool aceHigh) {
     dashboard::frame(s, box, 1);
     pixelui::text(s.target(), box, cards::rankLabel(rank), 0, fui::Color::Black, fui::TextAlign::Center);
   }
-  guideui::text(s, fui::makeRect(faceX, orderY + (wide ? 68 : 80), faceW, wide ? 30 : 52),
+  const int captionH = std::max(wide ? 30 : 52, int(s.target().lineHeight(4)));
+  const int captionY = std::min(orderY + (wide ? 68 : 80), r.bottom() - captionH);
+  guideui::text(s, fui::makeRect(faceX, captionY, faceW, captionH),
                 aceHigh ? tr(STR_CARDS_GUIDE_ACE_HIGH) : tr(STR_CARDS_GUIDE_ACE_LOW), 2);
 }
 }  // namespace cardpanel

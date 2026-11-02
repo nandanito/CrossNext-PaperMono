@@ -28,15 +28,14 @@ void text(fui::DrawTarget& target, fui::Rect box, const char* value, fui::FontId
   style.maxLines = lines;
   style.align = fui::TextAlign::Center;
   style.color = color;
-  const auto* cut = toybox::cutForLineHeight(target.lineHeight(font));
-  target.text(lines == 1 && cut ? toybox::inkCentred(box, *cut) : box, value, style);
+  target.text(lines == 1 ? toybox::inkCentred(target, box, style) : box, value, style);
 }
 void button(toybox::Screen& screen, fui::Rect box, const char* label, fui::ActionId action, int value = 0,
             bool selected = false) {
   if (selected)
-    screen.target().fill(box, ink);
+    lightui::surface(screen.target(), box, ink);
   else
-    screen.target().stroke(box, ink, pixelui::kBorder);
+    lightui::outline(screen.target(), box, ink, pixelui::kBorder);
   text(screen.target(), box.inset(fui::Insets{3, 6, 3, 6}), label, pixelui::kSmall, 1,
        selected ? fui::Color::White : fui::Color::Black);
   screen.frame().hit(box, action, value, fui::InputTouch);
@@ -242,9 +241,9 @@ void buildLengths(toybox::Screen& screen, int selected, Work& work) {
     const auto box =
         fui::makeRect(body.x + (wide ? (n - 4) * (w + gap) : 0), body.y + (wide ? 0 : (n - 4) * (h + gap)), w, h);
     if (active)
-      screen.target().fill(box, ink);
+      lightui::surface(screen.target(), box, ink);
     else
-      screen.target().stroke(box, ink, 4);
+      lightui::outline(screen.target(), box, ink, 4);
     screen.frame().hit(box, ActionLength, n, fui::InputTouch);
     const auto paint = active ? dashboard::paper : dashboard::ink;
     const int side = std::max(16, std::min(40, (int(box.width) - 100) / n)), pitch = side + 6;
@@ -308,7 +307,7 @@ void buildHowTo(toybox::Screen& screen) {
                                       StrId::STR_GUIDE_WORDLE_ACCENTS};
   for (int n = 0; n < 3; ++n) {
     const auto r = fui::makeRect(note.x, note.y + n * (h + 8), note.width, h);
-    dashboard::frame(screen, r, 3);
+    dashboard::frame(screen, r, pixelui::kBorder);
     if (n == 0)
       dashboard::icon(screen, fui::makeRect(r.x + 10, r.y + (h - 30) / 2, 30, 30), extra_check_32);
     else if (n == 1) {

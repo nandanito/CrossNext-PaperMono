@@ -114,7 +114,7 @@ void lessonField(toybox::Screen& screen, const int16_t left, const int16_t top, 
           number.align = fui::TextAlign::Center;
           // A cell is 60px and the display cut's line box is 63, so the box
           // itself would sit the digit low against the cell's own frame.
-          screen.target().text(toybox::inkCentred(box, toybox::kDisplayCut), digit, number);
+          screen.target().text(toybox::inkCentred(screen.target(), box, number), digit, number);
         }
       }
     }
@@ -141,7 +141,7 @@ void boardStrip(toybox::Screen& screen, const BoardModel& model) {
       wide ? fui::makeRect(last.right() + 20, body.y + 70, body.right() - last.right() - 20, body.height - 70)
            : fui::makeRect(body.x, body.bottom() - 164, body.width, 164);
   const auto counter = fui::makeRect(area.x, area.y, area.width, 54);
-  dashboard::frame(screen, counter, 3);
+  dashboard::frame(screen, counter, pixelui::kBorder);
   drawMine(screen, fui::makeRect(counter.x + 12, counter.y + 9, 36, 36), false);
   char value[48];
   std::snprintf(value, sizeof(value), tr(STR_GUIDE_MINES_COUNTER), ms::minesRemaining(model.game), model.game.mines);
@@ -151,9 +151,13 @@ void boardStrip(toybox::Screen& screen, const BoardModel& model) {
                   model.flagMode ? tr(STR_GUIDE_MINES_TAP_FLAG) : tr(STR_GUIDE_MINES_TAP_DIG), 3);
   for (int n = 0; n < 2; ++n) {
     const bool active = n == 0 ? model.flagMode : !model.flagMode;
-    const auto box = fui::makeRect(area.x + n * area.width / 2, area.y + 100, area.width / 2, 64);
-    gamepanel::row(screen, box, n == 0 ? tr(STR_UI_FLAG_AAABC0) : tr(STR_UI_DIG_109AF0), ActionToggleMode, n,
-                   n == 0 ? gamepanel::Mark::Flag : gamepanel::Mark::Dig, active, nullptr, false);
+    const int gap = chrome::lightHeader ? 12 : 0;
+    const auto band = chrome::lightHeader ? fui::makeRect(area.x + n * ((area.width - gap) / 2 + gap), area.y + 100,
+                                                          (area.width - gap) / 2, 64)
+                                          : fui::makeRect(area.x, area.y + 100, area.width, 64);
+    gamepanel::segment(screen, band, chrome::lightHeader ? 0 : n, chrome::lightHeader ? 1 : 2,
+                       n == 0 ? tr(STR_UI_FLAG_AAABC0) : tr(STR_UI_DIG_109AF0), ActionToggleMode, n,
+                       n == 0 ? gamepanel::Mark::Flag : gamepanel::Mark::Dig, active);
   }
 }
 
@@ -196,7 +200,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
               h = wide ? area.height : std::min(116, (int(area.height) - 2 * gap) / 3);
     for (int n = 0; n < 3; ++n) {
       const auto r = fui::makeRect(area.x + (wide ? n * (w + gap) : 0), area.y + (wide ? 0 : n * (h + gap)), w, h);
-      dashboard::frame(screen, r, 3);
+      dashboard::frame(screen, r, pixelui::kBorder);
       const int icon = wide ? 68 : 80;
       guideui::grid(screen, fui::makeRect(r.x + 16, r.y + 16, icon, icon), sizes[n]);
       char label[40];
@@ -210,9 +214,13 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
                            : fui::makeRect(r.x + 112, r.y + 68, r.width - 178, 30),
                       label, 3, fui::TextAlign::Left);
       const auto check = fui::makeRect(r.right() - 46, r.y + 24, 28, 28);
-      dashboard::frame(screen, check, 3);
-      if (screen.frame().buttonSelected(ActionBoardSize, sizes[n], model.size == sizes[n]))
-        screen.target().fill(check, dashboard::ink);
+      const bool selected = screen.frame().buttonSelected(ActionBoardSize, sizes[n], model.size == sizes[n]);
+      if (chrome::lightHeader)
+        dashboard::check(screen, check, selected);
+      else {
+        dashboard::frame(screen, check, pixelui::kBorder);
+        if (selected) screen.target().fill(check, dashboard::ink);
+      }
       screen.frame().hit(r, ActionBoardSize, sizes[n]);
     }
     return;
@@ -220,7 +228,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
   const auto left = wide ? fui::makeRect(body.x, body.y, body.width / 2 - 10, body.height) : body;
   const int statsH = wide ? 88 : std::max(112, 64 + 2 * screen.target().lineHeight(0));
   const auto stats = fui::makeRect(left.x, left.y + 8, left.width, statsH);
-  dashboard::frame(screen, stats, 3);
+  dashboard::frame(screen, stats, pixelui::kBorder);
   screen.target().fill(fui::makeRect(stats.x + stats.width / 2, stats.y + 10, 2, stats.height - 20), dashboard::ink);
   for (int n = 0; n < 2; ++n) {
     const auto box = fui::makeRect(stats.x + n * stats.width / 2, stats.y, stats.width / 2, stats.height);
@@ -254,7 +262,7 @@ void buildMenu(toybox::Screen& screen, const MenuModel& model) {
             y = top + (end - top - 5 * cell) / 2;
   static constexpr const char* sample[] = {"ooo..", "ooo..", "omo..", ".....", "....."};
   lessonField(screen, x, y, cell, sample, 5, 5);
-  dashboard::frame(screen, fui::makeRect(x, y, 5 * cell, 5 * cell), 3);
+  dashboard::frame(screen, fui::makeRect(x, y, 5 * cell, 5 * cell), pixelui::kBorder);
   dashboard::text(screen, fui::makeRect(left.x, end + 4, left.width, 30), tr(STR_REDESIGN_FIND_MINES), 0);
 }
 
@@ -326,7 +334,7 @@ void buildHowTo(toybox::Screen& screen, const HowToModel& model) {
               cols, rowCount);
   const auto notice = wide ? fui::makeRect(art.x, area.bottom() - 64, art.width, 64)
                            : fui::makeRect(area.x, area.bottom() - 64, area.width, 64);
-  if (page >= 3) dashboard::frame(screen, notice, 3);
+  if (page >= 3) dashboard::frame(screen, notice, pixelui::kBorder);
   const char* caption = I18N.get(foot[page]);
   guideui::text(screen, notice.inset(fui::Insets{4, 6, 4, 6}), caption, 2, fui::TextAlign::Center, 4);
 }
@@ -339,11 +347,11 @@ void buildBoard(toybox::Screen& screen, const BoardModel& model) {
   const auto info =
       wide ? fui::makeRect(last.right() + 20, body.y, body.right() - last.right() - 20, body.height) : body;
   const auto settings = fui::makeRect(info.right() - 48, info.y, 48, 48);
-  dashboard::frame(screen, settings, 3);
+  dashboard::frame(screen, settings, pixelui::kBorder);
   gamepanel::mark(screen, settings.inset(fui::Insets{8, 8, 8, 8}), gamepanel::Mark::Settings);
   dashboard::hit(screen, settings, ActionSettings);
   const auto status = fui::makeRect(info.x, info.y, info.width - 60, 48);
-  dashboard::frame(screen, status, 3);
+  dashboard::frame(screen, status, pixelui::kBorder);
   dashboard::text(screen, status.inset(fui::Insets{0, 8, 0, 8}),
                   over ? tr(STR_UI_GAME_OVER_B1DE5C) : tr(STR_REDESIGN_IN_PROGRESS), 0, fui::TextAlign::Left);
   for (int x = 0; x < model.game.columns; ++x)
@@ -354,7 +362,7 @@ void buildBoard(toybox::Screen& screen, const BoardModel& model) {
       if (!revealed)
         covered(screen, box);
       else
-        dashboard::frame(screen, box, 1);
+        screen.target().stroke(box, dashboard::ink, 1);
       if (value & ms::kFlagged)
         drawFlag(screen, box, false);
       else if (revealed && (value & ms::kMine)) {
@@ -380,7 +388,7 @@ void buildBoard(toybox::Screen& screen, const BoardModel& model) {
   if (over) {
     const auto banner = wide ? fui::makeRect(info.x, info.y + 76, info.width, 62)
                              : fui::makeRect(body.x, body.bottom() - 188, body.width, 52);
-    dashboard::frame(screen, banner, 3);
+    dashboard::frame(screen, banner, pixelui::kBorder);
     drawMine(screen, fui::makeRect(banner.x + 12, banner.y + 8, 36, 36), false);
     dashboard::text(screen, fui::makeRect(banner.x + 60, banner.y, banner.width - 68, banner.height),
                     model.game.status == ms::Status::Won ? tr(STR_UI_YOU_CLEARED_THE_FIELD_1C9789)
@@ -406,11 +414,13 @@ void buildResult(toybox::Screen& screen, const ResultModel& model) {
   screen.insetContent(fui::Insets{toybox::kGutter * 3, toybox::kMargin, toybox::kMargin, toybox::kMargin});
 
   fui::ButtonProps done;
+  if (chrome::lightHeader) done.styles = pixelui::buttonStyles();
   done.label = tr(STR_UI_DONE_E782E7);
   done.action = ActionDone;
   screen.button(done, screen.takeBottom(toybox::kPillHeight, toybox::kGutter));
 
   fui::ButtonProps again;
+  if (chrome::lightHeader) again.styles = pixelui::buttonStyles();
   again.label = tr(STR_WORDLE_PLAY_AGAIN);
   again.action = ActionAgain;
   screen.button(again, screen.takeBottom(toybox::kPillHeight, toybox::kGutter));

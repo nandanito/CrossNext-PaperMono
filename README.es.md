@@ -133,7 +133,12 @@ Elige un huevo, ponle nombre y acompáñalo mientras crece con tus lecturas.
 
 PET necesita `CrossNext-Resources.zip` en la microSD.
 Consulta [la guía de PET](docs/apps/pet.md) y
-[las novedades de v1.2.0](docs/releases/CrossNext-v1.2.0.md).
+[las novedades de v1.4.0](docs/releases/CrossNext-v1.4.0.md).
+
+La interfaz utiliza Noto Sans con los ajustes nuevos. Puedes elegir Noto Sans,
+Ubuntu o Noto Serif para toda la interfaz, por sección o para una app o juego.
+La letra de lectura se configura por separado. Las preferencias de Jersey 25
+pasan a Noto Sans.
 
 ## Qué incluye
 
@@ -218,7 +223,7 @@ consulta `THIRD-PARTY-NOTICES.txt`, `SOURCES.json` y `licenses/` en el paquete d
 microSD. Las portadas, libros, diccionarios y fuentes no cambian de licencia por
 estar incluidos en CrossNext.
 
-[Novedades de v1.2.0](docs/releases/CrossNext-v1.2.0.md)
+[Novedades de v1.4.0](docs/releases/CrossNext-v1.4.0.md)
 
 ## Apoya CrossNext
 
