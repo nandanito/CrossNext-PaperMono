@@ -133,7 +133,7 @@ Elige un huevo, ponle nombre y acompáñalo mientras crece con tus lecturas.
 
 PET necesita `CrossNext-Resources.zip` en la microSD.
 Consulta [la guía de PET](docs/apps/pet.md) y
-[las novedades de v1.1.6](docs/releases/CrossNext-v1.1.6.md).
+[las novedades de v1.2.0](docs/releases/CrossNext-v1.2.0.md).
 
 ## Qué incluye
 
@@ -218,7 +218,7 @@ consulta `THIRD-PARTY-NOTICES.txt`, `SOURCES.json` y `licenses/` en el paquete d
 microSD. Las portadas, libros, diccionarios y fuentes no cambian de licencia por
 estar incluidos en CrossNext.
 
-[Novedades de v1.1.6](docs/releases/CrossNext-v1.1.6.md)
+[Novedades de v1.2.0](docs/releases/CrossNext-v1.2.0.md)
 
 ## Apoya CrossNext
 
